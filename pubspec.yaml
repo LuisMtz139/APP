@@ -74,7 +74,7 @@ dev_dependencies:
 flutter:
   assets:
       - assets/AMCE.png
-      - assets/loader.jpeg
+      - assets/surgeon_background.jpeg
       - .env
       - test.env
       - dev.env

@@ -30,7 +30,7 @@ class SplashScreenController extends GetxController {
 
     } catch (e) {
       print('⚠️ Error al obtener datos de cliente: $e');
-      Get.offAllNamed('/login');
+      Get.offAllNamed('/homePage');
     } finally {
       isLoading.value = false;
     }
