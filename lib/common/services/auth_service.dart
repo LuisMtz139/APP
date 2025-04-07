@@ -1,8 +1,9 @@
 import 'dart:convert';
 
 import 'package:app_cirugia_endoscopica/common/constants/constants.dart';
-import 'package:app_cirugia_endoscopica/features/users%20copy/data/models/login_response.dart';
+import 'package:app_cirugia_endoscopica/features/users/data/models/login_response.dart';
 import 'package:app_cirugia_endoscopica/framework/preferences_service.dart';
+
 class AuthService {
   static final AuthService _instance = AuthService._internal();
   final PreferencesUser _prefsUser = PreferencesUser();
@@ -42,19 +43,17 @@ class AuthService {
       _cachedSession = response;
       
       final sessionData = {
-        'message': response.message,
+        'success': response.success,
+        'token': response.token,
         'user': {
           'id': response.user.id,
-          'email': response.user.email,
-          'first_name': response.user.firstName,
-          'last_name': response.user.lastName,
-          'id_cliente': response.user.id_cliente
-        },
-        'token': {
-          'refresh': response.token.refresh,
-          'access': response.token.access
-        },
-        'tienda_activa': response.tienda_activa
+          'rfc': response.user.rfc,
+          'nombre': response.user.nombre,
+          'correoElectronico': response.user.correoElectronico,
+          'membresia': response.user.membresia,
+          'membresiaNombre': response.user.membresiaNombre,
+          'estatus': response.user.estatus
+        }
       };
       
       _prefsUser.savePrefs(
@@ -87,6 +86,16 @@ class AuthService {
 
   Future<bool> isLoggedIn() async {
     final session = await getSession();
-    return session != null && session.token.access.isNotEmpty;
+    return session != null && session.token.isNotEmpty;
+  }
+  
+  Future<String?> getToken() async {
+    final session = await getSession();
+    return session?.token;
+  }
+  
+  Future<UserData?> getUserData() async {
+    final session = await getSession();
+    return session?.user;
   }
 }

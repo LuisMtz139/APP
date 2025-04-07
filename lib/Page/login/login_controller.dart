@@ -1,50 +1,44 @@
+import 'package:app_cirugia_endoscopica/common/services/auth_service.dart';
+import 'package:app_cirugia_endoscopica/features/users/domain/usecases/login_usecase.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class LoginController extends GetxController {
-  // Controladores de texto
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
+  final LoginUsecase loginUsecase;
   
-  // Variables observables
-  var rememberMe = false.obs;
-  var acceptTerms = false.obs;
-  var obscurePassword = true.obs;
+  LoginController({required this.loginUsecase});
   
-  // Clave global para el formulario
-  final formKey = GlobalKey<FormState>();
-
-  // Método para alternar visibilidad de contraseña
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  
+  // Nodos de foco para manejar la navegación entre campos
+  final FocusNode emailFocusNode = FocusNode();
+  final FocusNode passwordFocusNode = FocusNode();
+  
+  final RxBool isLoading = false.obs;
+  final RxBool passwordVisible = false.obs;
+  final RxBool acceptTerms = false.obs;
+  
   void togglePasswordVisibility() {
-    obscurePassword.value = !obscurePassword.value;
+    passwordVisible.value = !passwordVisible.value;
   }
-
-  // Método para alternar recordar usuario
-  void toggleRememberMe(bool? value) {
-    if (value != null) {
-      rememberMe.value = value;
-    }
-  }
-
-  // Método para alternar aceptación de términos
+  
   void toggleAcceptTerms(bool? value) {
-    if (value != null) {
-      acceptTerms.value = value;
-    }
+    acceptTerms.value = value ?? false;
   }
-
-  // Validación de email
+  
   String? validateEmail(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Por favor ingresa tu correo';
+      return 'Por favor ingresa tu correo electrónico';
     }
-    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-      return 'Ingresa un correo válido';
+    if (!GetUtils.isEmail(value)) {
+      return 'Ingresa un correo electrónico válido';
     }
     return null;
   }
-
-  // Validación de contraseña
+  
   String? validatePassword(String? value) {
     if (value == null || value.isEmpty) {
       return 'Por favor ingresa tu contraseña';
@@ -54,31 +48,32 @@ class LoginController extends GetxController {
     }
     return null;
   }
-
-  // Método para iniciar sesión
-  void login() {
-    if (formKey.currentState!.validate() && acceptTerms.value) {
-      // Lógica de login aquí
-      Get.snackbar(
-        'Éxito',
-        'Inicio de sesión exitoso',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
+  
+  Future<void> login() async {
+    try {
+      final response = await loginUsecase.execute(
+        usernameController.text.trim(),
+        passwordController.text,
       );
-    } else if (!acceptTerms.value) {
-      Get.snackbar(
-        'Atención',
-        'Debes aceptar los términos y condiciones',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      
+      final authService = AuthService();
+      final bool saved = await authService.saveLoginResponse(response);
+      Get.offAllNamed('/homePage');
+      
+    } catch (e) {
+      // Propagamos la excepción para que se maneje en la UI con QuickAlert
+      rethrow;
     }
   }
-
+  
   @override
   void onClose() {
-    emailController.dispose();
+    // Liberar recursos
+    usernameController.dispose();
     passwordController.dispose();
+    // También liberamos los recursos de los FocusNode
+    emailFocusNode.dispose();
+    passwordFocusNode.dispose();
     super.onClose();
   }
 }

@@ -1,7 +1,9 @@
+import 'package:app_cirugia_endoscopica/common/services/auth_service.dart';
 import 'package:app_cirugia_endoscopica/common/theme/App_Theme.dart';
 import 'package:custom_line_indicator_bottom_navbar/custom_line_indicator_bottom_navbar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:quickalert/quickalert.dart';
 import 'home_controller.dart';
 
 class HomePage extends StatelessWidget {
@@ -110,7 +112,25 @@ class HomePage extends StatelessWidget {
               size: 20,
             )
           ),
-          onPressed: () {},
+        onPressed: () {
+  QuickAlert.show(
+    context: Get.context!,
+    type: QuickAlertType.confirm,
+    title: '¿Estás seguro?',
+    text: '¿Quieres cerrar sesión?',
+    confirmBtnText: 'Sí',
+    cancelBtnText: 'No',
+    onConfirmBtnTap: () {
+      final AuthService authService = AuthService();
+      authService.logout();
+      Get.offAllNamed('/login');
+    },
+    onCancelBtnTap: () {
+      // No hacer nada, simplemente cerrar el diálogo
+    },
+  );
+},
+
         ),
         const SizedBox(width: 12),
       ],

@@ -1,7 +1,8 @@
+import 'package:app_cirugia_endoscopica/Page/login/login_controller.dart';
 import 'package:app_cirugia_endoscopica/common/routes/router.dart';
 import 'package:app_cirugia_endoscopica/common/settings/routes_names.dart';
 import 'package:app_cirugia_endoscopica/common/theme/App_Theme.dart';
-import 'package:app_cirugia_endoscopica/features/users%20copy/presentation/splashScreen/splash_screen_controller.dart';
+import 'package:app_cirugia_endoscopica/features/users/presentation/splashScreen/splash_SplashPage_controller.dart';
 import 'package:app_cirugia_endoscopica/usecase_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -22,10 +23,11 @@ class App extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: MedicalTheme.themeData, 
       initialBinding: BindingsBuilder(() {
-       Get.put(SplashScreenController( clientDataUsecase: usecaseConfig.clientedataUsecase!,));
+       Get.put(SplashScreenController( clientDataUsecase: usecaseConfig.userDataUsecase!,));
+       Get.put(LoginController(loginUsecase: usecaseConfig.loginUsecase!));
       }),
       
-      initialRoute: RoutesNames.loginPage, 
+      initialRoute: RoutesNames.welcomePage, 
       getPages: AppPages.routes, 
       unknownRoute: AppPages.unknownRoute, 
     );

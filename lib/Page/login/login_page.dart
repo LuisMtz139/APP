@@ -2,10 +2,11 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:app_cirugia_endoscopica/common/theme/App_Theme.dart';
+import 'package:quickalert/quickalert.dart';
 import 'login_controller.dart';
 
 class LoginPage extends StatelessWidget {
-  final LoginController controller = Get.put(LoginController());
+  final LoginController controller = Get.find<LoginController>();
 
   @override
   Widget build(BuildContext context) {
@@ -29,8 +30,12 @@ class LoginPage extends StatelessWidget {
               SizedBox(height: size.height * 0.07),
               _formularioInicio(size),
               SizedBox(height: size.height * 0.05),
-              _loginBoton(size),
+              _loginBoton(size, context),
               _terminoCondiciones(size),
+              
+              SizedBox(height: size.height * 0.02),
+              
+              // Eliminamos el contenedor de error ya que ahora usaremos QuickAlert
             ],
           ),
         ),
@@ -68,14 +73,23 @@ class LoginPage extends StatelessWidget {
   }
   
   Widget _formularioInicio(Size size) {
+    // Creamos un FocusNode para el campo de correo y otro para la contraseña
     return Form(
       key: controller.formKey,
       child: Column(
         children: [
           // Campo de correo
           TextFormField(
-            controller: controller.emailController,
+            controller: controller.usernameController,
             keyboardType: TextInputType.emailAddress,
+            // Asignamos el FocusNode del correo
+            focusNode: controller.emailFocusNode,
+            // Configuramos el tipo de acción del teclado para pasar al siguiente campo
+            textInputAction: TextInputAction.next,
+            // Al pulsar "siguiente" en el teclado, pasamos el foco al campo de contraseña
+            onFieldSubmitted: (_) {
+              FocusScope.of(Get.context!).requestFocus(controller.passwordFocusNode);
+            },
             decoration: InputDecoration(
               labelText: 'Correo electrónico',
               prefixIcon: Icon(Icons.email_rounded, color: MedicalTheme.primaryColor),
@@ -101,15 +115,36 @@ class LoginPage extends StatelessWidget {
           // Campo de contraseña
           Obx(() => TextFormField(
             controller: controller.passwordController,
-            obscureText: controller.obscurePassword.value,
+            // Asignamos el FocusNode de la contraseña
+            focusNode: controller.passwordFocusNode,
+            // Configuramos el tipo de acción del teclado para hacer submit
+            textInputAction: TextInputAction.done,
+            // Al pulsar "listo" en el teclado, intentamos hacer login si el formulario es válido
+            onFieldSubmitted: (_) {
+              if ((controller.formKey as GlobalKey<FormState>).currentState!.validate()) {
+                if (controller.acceptTerms.value) {
+                  controller.login();
+                } else {
+                  // Mostrar alerta de términos y condiciones
+                  QuickAlert.show(
+                    context: Get.context!,
+                    type: QuickAlertType.error,
+                    title: 'Error',
+                    text: 'Debes aceptar los términos y condiciones para continuar',
+                    confirmBtnColor: MedicalTheme.primaryColor,
+                  );
+                }
+              }
+            },
+            obscureText: !controller.passwordVisible.value,
             decoration: InputDecoration(
               labelText: 'Contraseña',
               prefixIcon: Icon(Icons.lock_rounded, color: MedicalTheme.primaryColor),
               suffixIcon: IconButton(
                 icon: Icon(
-                  controller.obscurePassword.value 
-                    ? Icons.visibility_off 
-                    : Icons.visibility,
+                  controller.passwordVisible.value 
+                    ? Icons.visibility
+                    : Icons.visibility_off,
                   color: MedicalTheme.textSecondaryColor,
                 ),
                 onPressed: controller.togglePasswordVisibility,
@@ -136,11 +171,42 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  Widget _loginBoton(Size size) {
+  Widget _loginBoton(Size size, BuildContext context) {
     return SizedBox(
       width: size.width * 0.8,
-      child: ElevatedButton(
-        onPressed: controller.login,
+      child: Obx(() => ElevatedButton(
+        onPressed: controller.isLoading.value ? null : () async {
+          if ((controller.formKey as GlobalKey<FormState>).currentState!.validate()) {
+            if (!controller.acceptTerms.value) {
+              // Usar QuickAlert para mostrar error de términos y condiciones
+              QuickAlert.show(
+                context: context,
+                type: QuickAlertType.error,
+                title: 'Uops ...',
+                text: 'Debes aceptar los términos y condiciones para continuar',
+                confirmBtnColor: MedicalTheme.primaryColor,
+              );
+              return;
+            }
+            
+            try {
+              controller.isLoading.value = true;
+              await controller.login();
+              // Si hay un error en login(), se manejará en el catch
+            } catch (e) {
+              // Mostrar el error con QuickAlert
+              QuickAlert.show(
+                context: context,
+                type: QuickAlertType.error,
+                title: 'Acceso Incorrecto',
+                text: e.toString().replaceAll('Exception: ', ''),
+                confirmBtnColor: MedicalTheme.primaryColor,
+              );
+            } finally {
+              controller.isLoading.value = false;
+            }
+          }
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: MedicalTheme.primaryColor,
           padding: EdgeInsets.symmetric(vertical: size.height * 0.02),
@@ -150,15 +216,24 @@ class LoginPage extends StatelessWidget {
           elevation: 5,
           shadowColor: MedicalTheme.primaryColor.withOpacity(0.3),
         ),
-        child: Text(
-          'Iniciar sesión',
-          style: TextStyle(
-            fontSize: size.width * 0.045,
-            fontWeight: FontWeight.bold,
-            color: MedicalTheme.textLightColor,
-          ),
-        ),
-      ),
+        child: controller.isLoading.value
+            ? SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
+            : Text(
+                'Iniciar sesión',
+                style: TextStyle(
+                  fontSize: size.width * 0.045,
+                  fontWeight: FontWeight.bold,
+                  color: MedicalTheme.textLightColor,
+                ),
+              ),
+      )),
     );
   }
 
