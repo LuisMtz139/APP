@@ -15,6 +15,10 @@ class AppPages {
       name: RoutesNames.homePage,
       page: () => HomePage(),
     ),
+    GetPage(
+      name: RoutesNames.loginPage,
+      page: () => LoginPage(),
+    ),
     
     
   ];

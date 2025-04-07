@@ -1,26 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:app_cirugia_endoscopica/common/theme/App_Theme.dart';
+import 'login_controller.dart';
 
-class LoginPage extends StatefulWidget {
-  @override
-  _LoginPageState createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _rememberMe = false;
-  bool _acceptTerms = false;
-  bool _obscurePassword = true;
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
+class LoginPage extends StatelessWidget {
+  final LoginController controller = Get.put(LoginController());
 
   @override
   Widget build(BuildContext context) {
@@ -38,18 +23,13 @@ class _LoginPageState extends State<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Logo y título
+              SizedBox(height: size.height * 0.07),
+
               _logoTitulo(size),
               SizedBox(height: size.height * 0.07),
-              
-              // Formulario de login
               _formularioInicio(size),
               SizedBox(height: size.height * 0.05),
-              
-              // Botón de login
               _loginBoton(size),
-              
-              // Términos y condiciones
               _terminoCondiciones(size),
             ],
           ),
@@ -87,109 +67,80 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
   
-Widget _formularioInicio(Size size) {
-  return Form(
-    key: _formKey,
-    child: Column(
-      children: [
-        // Campo de correo
-        TextFormField(
-          controller: _emailController,
-          keyboardType: TextInputType.emailAddress,
-          decoration: InputDecoration(
-            labelText: 'Correo electrónico',
-            prefixIcon: Icon(Icons.email_rounded, color: MedicalTheme.primaryColor),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(15),
-              borderSide: BorderSide(color: MedicalTheme.dividerColor),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(15),
-              borderSide: BorderSide(color: MedicalTheme.primaryColor, width: 1.5),
-            ),
-            filled: true,
-            fillColor: MedicalTheme.backgroundColor,
-            contentPadding: EdgeInsets.symmetric(
-              vertical: size.height * 0.02,
-              horizontal: size.width * 0.04,
-            ),
-          ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Por favor ingresa tu correo';
-            }
-            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-              return 'Ingresa un correo válido';
-            }
-            return null;
-          },
-        ),
-        SizedBox(height: size.height * 0.025),
-        
-        // Campo de contraseña
-        TextFormField(
-          controller: _passwordController,
-          obscureText: _obscurePassword,
-          decoration: InputDecoration(
-            labelText: 'Contraseña',
-            prefixIcon: Icon(Icons.lock_rounded, color: MedicalTheme.primaryColor),
-            suffixIcon: IconButton(
-              icon: Icon(
-                _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                color: MedicalTheme.textSecondaryColor,
+  Widget _formularioInicio(Size size) {
+    return Form(
+      key: controller.formKey,
+      child: Column(
+        children: [
+          // Campo de correo
+          TextFormField(
+            controller: controller.emailController,
+            keyboardType: TextInputType.emailAddress,
+            decoration: InputDecoration(
+              labelText: 'Correo electrónico',
+              prefixIcon: Icon(Icons.email_rounded, color: MedicalTheme.primaryColor),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+                borderSide: BorderSide(color: MedicalTheme.dividerColor),
               ),
-              onPressed: () {
-                setState(() {
-                  _obscurePassword = !_obscurePassword;
-                });
-              },
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+                borderSide: BorderSide(color: MedicalTheme.primaryColor, width: 1.5),
+              ),
+              filled: true,
+              fillColor: MedicalTheme.backgroundColor,
+              contentPadding: EdgeInsets.symmetric(
+                vertical: size.height * 0.02,
+                horizontal: size.width * 0.04,
+              ),
             ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(15),
-              borderSide: BorderSide(color: MedicalTheme.dividerColor),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(15),
-              borderSide: BorderSide(color: MedicalTheme.primaryColor, width: 1.5),
-            ),
-            filled: true,
-            fillColor: MedicalTheme.backgroundColor,
-            contentPadding: EdgeInsets.symmetric(
-              vertical: size.height * 0.02,
-              horizontal: size.width * 0.04,
-            ),
+            validator: controller.validateEmail,
           ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Por favor ingresa tu contraseña';
-            }
-            if (value.length < 6) {
-              return 'La contraseña debe tener al menos 6 caracteres';
-            }
-            return null;
-          },
-        ),
-      ],
-    ),
-  );
-}
+          SizedBox(height: size.height * 0.025),
+          
+          // Campo de contraseña
+          Obx(() => TextFormField(
+            controller: controller.passwordController,
+            obscureText: controller.obscurePassword.value,
+            decoration: InputDecoration(
+              labelText: 'Contraseña',
+              prefixIcon: Icon(Icons.lock_rounded, color: MedicalTheme.primaryColor),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  controller.obscurePassword.value 
+                    ? Icons.visibility_off 
+                    : Icons.visibility,
+                  color: MedicalTheme.textSecondaryColor,
+                ),
+                onPressed: controller.togglePasswordVisibility,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+                borderSide: BorderSide(color: MedicalTheme.dividerColor),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+                borderSide: BorderSide(color: MedicalTheme.primaryColor, width: 1.5),
+              ),
+              filled: true,
+              fillColor: MedicalTheme.backgroundColor,
+              contentPadding: EdgeInsets.symmetric(
+                vertical: size.height * 0.02,
+                horizontal: size.width * 0.04,
+              ),
+            ),
+            validator: controller.validatePassword,
+          )),
+        ],
+      ),
+    );
+  }
 
   Widget _loginBoton(Size size) {
     return SizedBox(
       width: size.width * 0.8,
       child: ElevatedButton(
-        onPressed: () {
-          if (_formKey.currentState!.validate() && _acceptTerms) {
-            // Lógica de login
-          } else if (!_acceptTerms) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Debes aceptar los términos y condiciones'),
-                backgroundColor: MedicalTheme.errorColor,
-              ),
-            );
-          }
-        },
+        onPressed: controller.login,
         style: ElevatedButton.styleFrom(
           backgroundColor: MedicalTheme.primaryColor,
           padding: EdgeInsets.symmetric(vertical: size.height * 0.02),
@@ -216,18 +167,14 @@ Widget _formularioInicio(Size size) {
       padding: EdgeInsets.only(top: size.height * 0.03),
       child: SizedBox(
         width: size.width * 0.8,
-        child: Column(
+        child: Obx(() => Column(
           children: [
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Checkbox(
-                  value: _acceptTerms,
-                  onChanged: (value) {
-                    setState(() {
-                      _acceptTerms = value!;
-                    });
-                  },
+                  value: controller.acceptTerms.value,
+                  onChanged: controller.toggleAcceptTerms,
                   activeColor: MedicalTheme.primaryColor,
                 ),
                 Expanded(
@@ -268,7 +215,7 @@ Widget _formularioInicio(Size size) {
               ],
             ),
           ],
-        ),
+        )),
       ),
     );
   }

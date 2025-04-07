@@ -25,7 +25,7 @@ class App extends StatelessWidget {
        Get.put(SplashScreenController( clientDataUsecase: usecaseConfig.clientedataUsecase!,));
       }),
       
-      initialRoute: RoutesNames.welcomePage, 
+      initialRoute: RoutesNames.loginPage, 
       getPages: AppPages.routes, 
       unknownRoute: AppPages.unknownRoute, 
     );
