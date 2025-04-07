@@ -12,7 +12,6 @@ class SplashScreenController extends GetxController {
   final RxBool isLoading = true.obs;
   final RxString companyName = "".obs;
   
-  // Variables para controlar el estado de los permisos
   final RxBool cameraPermissionGranted = false.obs;
   final RxBool storagePermissionGranted = false.obs;
   
