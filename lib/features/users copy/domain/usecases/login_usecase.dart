@@ -9,6 +9,6 @@ class LoginUsecase {
   LoginUsecase({required this.userRepository});
 
   Future<LoginResponse> execute(String username, String password, [String? base_datos]) async {
-    return await userRepository.loginUser(username, password, base_datos);
+    return await userRepository.loginUser(username, password, );
   }
 }
