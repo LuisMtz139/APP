@@ -7,12 +7,12 @@ class DashboardsPage extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardsPage> {
-  int _selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: MedicalTheme.backgroundColor,
+    
       appBar: AppBar(
         backgroundColor: MedicalTheme.backgroundColor,
         elevation: 0,
