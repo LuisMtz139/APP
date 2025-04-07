@@ -18,5 +18,3 @@ void main() async{
   runApp(const App());
 }
 
-  print('=========ENVIROMENT SELECTED: ');                                         
-  print('=========ENVIROMENT SELECTED: ');                                         
