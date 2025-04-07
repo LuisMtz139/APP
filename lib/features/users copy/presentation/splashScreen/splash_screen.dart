@@ -8,7 +8,7 @@ class SplashPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Iniciar el proceso de autenticación cuando la página se renderiza
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       controller.checkAuthentication();
     });
