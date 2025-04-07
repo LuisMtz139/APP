@@ -43,6 +43,7 @@ dependencies:
   path_provider: ^2.1.1
   intl: ^0.20.2
   flutter_spinkit: ^5.2.1
+  custom_line_indicator_bottom_navbar: ^0.0.8
 
 
 flutter_launcher_icons:
@@ -73,6 +74,7 @@ dev_dependencies:
 flutter:
   assets:
       - assets/AMCE.png
+      - assets/loader.jpeg
       - .env
       - test.env
       - dev.env
