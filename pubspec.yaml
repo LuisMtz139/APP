@@ -44,15 +44,14 @@ dependencies:
   intl: ^0.20.2
   flutter_spinkit: ^5.2.1
   custom_line_indicator_bottom_navbar: ^0.0.8
-  quickalert: ^1.1.0
 
 
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/logo.png" 
+  image_path: "assets/AMCE.png" 
   adaptive_icon_background: "#FFFFFF" 
-  adaptive_icon_foreground: "assets/logo.png"
+  adaptive_icon_foreground: "assets/AMCE.png"
 
 dev_dependencies:
   flutter_test:
