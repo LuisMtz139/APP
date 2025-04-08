@@ -24,7 +24,7 @@ class SplashScreenController extends GetxController {
   
   Future<void> checkAuthentication() async {
     try {
-      final clientData = await clientDataUsecase.execute();
+       await clientDataUsecase.execute();
               Get.offAllNamed('/homePage');
 
     } catch (e) {

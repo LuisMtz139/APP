@@ -25,6 +25,7 @@ class App extends StatelessWidget {
       initialBinding: BindingsBuilder(() {
        Get.put(SplashScreenController( clientDataUsecase: usecaseConfig.userDataUsecase!,));
        Get.put(LoginController(loginUsecase: usecaseConfig.loginUsecase!));
+       
       }),
       
       initialRoute: RoutesNames.welcomePage, 
