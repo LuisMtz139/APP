@@ -1,4 +1,4 @@
-import 'package:app_cirugia_endoscopica/features/events/domain/entities/events_entity.dart';
+import 'package:app_cirugia_endoscopica/features/events/domain/entities/events/events_entity.dart';
 
 class EventsModel extends EventsEntity {
   EventsModel({

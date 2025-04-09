@@ -1,4 +1,4 @@
-import 'package:app_cirugia_endoscopica/features/events/domain/entities/events_entity.dart';
+import 'package:app_cirugia_endoscopica/features/events/domain/entities/events/events_entity.dart';
 import 'package:app_cirugia_endoscopica/features/events/domain/usecases/events_usecase.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

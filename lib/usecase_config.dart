@@ -1,6 +1,7 @@
 
 import 'package:app_cirugia_endoscopica/features/events/data/datasources/event_data_sources.dart';
 import 'package:app_cirugia_endoscopica/features/events/data/repositories/event_repository_imp.dart';
+import 'package:app_cirugia_endoscopica/features/events/domain/usecases/event_by_id_usecase.dart';
 import 'package:app_cirugia_endoscopica/features/events/domain/usecases/events_usecase.dart';
 import 'package:app_cirugia_endoscopica/features/users/data/datasources/user_data_sources.dart';
 import 'package:app_cirugia_endoscopica/features/users/data/repositories/user_repository_imp.dart';
@@ -16,7 +17,7 @@ class UsecaseConfig {
   EventDataSourcesImp? eventDataSourcesImp;
   EventRepositoryImp? eventRepositoryImpl;
   EventsUsecase? eventsUsecase;
-
+   EventByIdUsecase? eventByIdUsecase;
   UsecaseConfig(){
     userDataSourcesImp = UserDataSourcesImp();
     userRepositoryImpl = UserRepositoryImpl(userDataSources: userDataSourcesImp!);
@@ -27,6 +28,6 @@ class UsecaseConfig {
     eventsUsecase = EventsUsecase(eventRepository: eventRepositoryImpl!);
     
     userDataUsecase = UserDataUsecase(userRepository:  userRepositoryImpl!);
-   
+   eventByIdUsecase = EventByIdUsecase(eventRepository: eventRepositoryImpl!);
     }
 }

@@ -3,4 +3,5 @@ class RoutesNames {
   static const String homePage = '/homePage';
   static const String loginPage = '/login';
   static const String dashboardSPage = '/dashboardS';
+  static const String eventbyid = '/eventbyid';
 }

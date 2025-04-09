@@ -1,5 +1,6 @@
+import 'package:app_cirugia_endoscopica/common/settings/routes_names.dart';
 import 'package:app_cirugia_endoscopica/common/theme/App_Theme.dart';
-import 'package:app_cirugia_endoscopica/features/events/domain/entities/events_entity.dart';
+import 'package:app_cirugia_endoscopica/features/events/domain/entities/events/events_entity.dart';
 import 'package:app_cirugia_endoscopica/features/events/presentation/events/event_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -190,8 +191,8 @@ class EventosPage extends StatelessWidget {
   Widget _buildEventCard(EventsEntity event) {
     return GestureDetector(
       onTap: () {
-        // Navegar a la página de detalles del evento
-        // Get.toNamed('/event-details', arguments: {'event': event});
+  print('Navegando al evento con ID: ${event.id}');
+  Get.toNamed(RoutesNames.eventbyid, arguments: {'eventId': event.id.toString()});
       },
       child: Container(
         width: double.infinity,
