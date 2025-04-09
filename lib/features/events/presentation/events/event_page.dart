@@ -111,31 +111,7 @@ class EventosPage extends StatelessWidget {
                             'próximos eventos',
                             style: MedicalTheme.headingSmall,
                           ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: MedicalTheme.surfaceColor,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              children: [
-                                Text(
-                                  'Filtrar',
-                                  style: TextStyle(
-                                    color: MedicalTheme.primaryColor,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Icon(
-                                  Icons.filter_list_rounded,
-                                  color: MedicalTheme.primaryColor,
-                                  size: 18,
-                                ),
-                              ],
-                            ),
-                          ),
+                          
                         ],
                       ),
                     ),

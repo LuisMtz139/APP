@@ -1,6 +1,6 @@
 import 'package:app_cirugia_endoscopica/Page/dashboards/dashboards_page.dart';
-import 'package:app_cirugia_endoscopica/Page/home/home_page.dart';
-import 'package:app_cirugia_endoscopica/Page/login/login_page.dart';
+import 'package:app_cirugia_endoscopica/features/users/presentation/home/home_page.dart';
+import 'package:app_cirugia_endoscopica/features/users/presentation/login/login_page.dart';
 import 'package:app_cirugia_endoscopica/common/settings/routes_names.dart';
 import 'package:app_cirugia_endoscopica/features/events/presentation/eventbyid/event_by_id_page.dart';
 import 'package:app_cirugia_endoscopica/features/users/presentation/splashScreen/splash_page.dart';
