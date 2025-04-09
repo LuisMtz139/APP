@@ -66,14 +66,15 @@ Future<List<UserDataEntity>> userData(String token) async {
       
       final dynamic jsonData = json.decode(utf8.decode(response.bodyBytes));      
 
-      if (jsonData is Map<String, dynamic>) {
-        try {
-          return [UserDataModel.fromJson(jsonData)];
-        } catch (e) {
-          print('❌ Error procesando el objeto: $e');
-          throw Exception('Error al procesar los datos del cliente: $e');
-        }
-      } else if (jsonData is List<dynamic>) {
+    if (jsonData is Map<String, dynamic>) {
+      if (jsonData.containsKey('data')) {
+        final data = jsonData['data'];
+        return [UserDataModel.fromJson(data)];
+      } else {
+        throw Exception('La respuesta no contiene el campo "data"');
+      }
+    }
+    else if (jsonData is List<dynamic>) {
         final List<UserDataEntity> results = [];
         for (var item in jsonData) {
           try {
