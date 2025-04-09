@@ -39,16 +39,25 @@ class PerfilPage extends StatelessWidget {
                     //     ),
                     //   ),
                     // ),
-                    // SizedBox(height: 16),
                     SizedBox(height: 35),
+
                     Text(
                       '${controller.nombreController.text} ${controller.apellidoPaternoController.text} ${controller.apellidoMaternoController.text}',
                       style: MedicalTheme.headingMedium,
                     ),
+                    // if (controller.especialidad1Controller.text.isNotEmpty)
+                    //   Text(
+                    //     controller.especialidad1Controller.text,
+                    //     style: TextStyle(
+                    //       color: MedicalTheme.successColor,
+                    //       fontWeight: FontWeight.w600,
+                    //     ),
+                    //   ),
                   ],
                 ),
               ),
               SizedBox(height: 40),
+
               _buildLabeledTextField('RFC', controller.rfcController, isRequired: true),
               _buildLabeledTextField('CURP', controller.curpController),
               _buildLabeledTextField('Nombre', controller.nombreController),
@@ -90,6 +99,7 @@ class PerfilPage extends StatelessWidget {
               _buildLabeledTextField('Estatus Membresía', controller.estatusController),
               _buildLabeledTextField('Membresía', controller.membresiaNombreController),
               _buildLabeledTextField('Expiración Membresía', controller.membresiaExpiracionController),
+
               SizedBox(height: 50),
             ],
           ),
@@ -98,8 +108,7 @@ class PerfilPage extends StatelessWidget {
     );
   }
 
-  Widget _buildLabeledTextField(String label, TextEditingController controller,
-      {bool isRequired = false}) {
+  Widget _buildLabeledTextField(String label, TextEditingController controller, {bool isRequired = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Column(
