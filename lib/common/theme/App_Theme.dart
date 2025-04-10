@@ -4,7 +4,9 @@ class MedicalTheme {
   // Main colors
   static const primaryColor = Color(0xFF05699f);
   static const secondaryColor = Color(0xFF1a4179);
-  
+  static const loading = Color(0xFFD6D6D6); // Equivalent to Colors.grey.shade300
+    static const loadinganimation = Color(0xFFF5F5F5); // Equivalent to Colors.grey.shade100
+
   // Background and surface colors
   static const backgroundColor = Colors.white;
   static const surfaceColor = Color(0xFFF0F4F8);
