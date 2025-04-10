@@ -26,17 +26,13 @@ class App extends StatelessWidget {
       theme: MedicalTheme.themeData, 
       initialBinding: BindingsBuilder(() {
         Get.put(AuthService(), permanent: true);
-        
-        Get.put(SplashScreenController(
-          clientDataUsecase: usecaseConfig.userDataUsecase!,
-        ));
-        Get.put(LoginController(loginUsecase: usecaseConfig.loginUsecase!));
-        Get.lazyPut(() => EventByIdController(eventByIdUsecase: usecaseConfig.eventByIdUsecase!));
-        Get.lazyPut(() => EventsController(eventsUsecase: usecaseConfig.eventsUsecase!));
-        Get.lazyPut(() => DashboardsController(userDebtsUsecase: usecaseConfig.userDebtsUsecase!));
-        Get.lazyPut(() => PerfilController(userDataUsecase: usecaseConfig.userDataUsecase!));
-        
-        Get.lazyPut(() => HomeController());
+        Get.put(SplashScreenController(clientDataUsecase: usecaseConfig.userDataUsecase!), permanent: true);
+        Get.put(LoginController(loginUsecase: usecaseConfig.loginUsecase!), permanent: true);
+        Get.put(EventsController(eventsUsecase: usecaseConfig.eventsUsecase!), permanent: true);
+        Get.put(EventByIdController(eventByIdUsecase: usecaseConfig.eventByIdUsecase!), permanent: true);
+        Get.put(DashboardsController(userDebtsUsecase: usecaseConfig.userDebtsUsecase!), permanent: true);
+        Get.put(PerfilController(userDataUsecase: usecaseConfig.userDataUsecase!), permanent: true);
+        Get.put(HomeController(), permanent: true);
       }),
       
       initialRoute: RoutesNames.welcomePage, 
