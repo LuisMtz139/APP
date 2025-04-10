@@ -30,6 +30,7 @@ class AppPages {
         return EventByIdPage(eventId: eventId);
       },
       transition: Transition.rightToLeft,
+      
       transitionDuration: Duration(milliseconds: 300),
     ),
     

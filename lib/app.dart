@@ -31,11 +31,11 @@ class App extends StatelessWidget {
           clientDataUsecase: usecaseConfig.userDataUsecase!,
         ));
         Get.put(LoginController(loginUsecase: usecaseConfig.loginUsecase!));
-        
-        Get.lazyPut(() => EventsController(eventsUsecase: usecaseConfig.eventsUsecase!));
         Get.lazyPut(() => EventByIdController(eventByIdUsecase: usecaseConfig.eventByIdUsecase!));
+        Get.lazyPut(() => EventsController(eventsUsecase: usecaseConfig.eventsUsecase!));
         Get.lazyPut(() => DashboardsController(userDebtsUsecase: usecaseConfig.userDebtsUsecase!));
         Get.lazyPut(() => PerfilController(userDataUsecase: usecaseConfig.userDataUsecase!));
+        
         Get.lazyPut(() => HomeController());
       }),
       
