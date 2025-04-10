@@ -17,9 +17,9 @@ class EventsController extends GetxController {
   EventsController({required this.eventsUsecase});
   
   @override
-  void onInit() {
+  void onInit() async {
     super.onInit();
-    fetchEvents();
+   await fetchEvents();
   }
   
   // Método para obtener los eventos del repositorio

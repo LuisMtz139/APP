@@ -1,4 +1,4 @@
-import 'package:app_cirugia_endoscopica/Page/dashboards/dashboards_page.dart';
+import 'package:app_cirugia_endoscopica/features/users/presentation/dashboards/dashboards_page.dart';
 import 'package:app_cirugia_endoscopica/features/users/presentation/home/home_page.dart';
 import 'package:app_cirugia_endoscopica/features/users/presentation/login/login_page.dart';
 import 'package:app_cirugia_endoscopica/common/settings/routes_names.dart';

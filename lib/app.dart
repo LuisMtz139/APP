@@ -1,6 +1,7 @@
 import 'dart:math';
 
-import 'package:app_cirugia_endoscopica/Page/perfil/perfil_controller.dart';
+import 'package:app_cirugia_endoscopica/features/users/presentation/dashboards/dashboards_controller.dart';
+import 'package:app_cirugia_endoscopica/features/users/presentation/perfil/perfil_controller.dart';
 import 'package:app_cirugia_endoscopica/features/users/presentation/login/login_controller.dart';
 import 'package:app_cirugia_endoscopica/common/routes/router.dart';
 import 'package:app_cirugia_endoscopica/common/settings/routes_names.dart';
@@ -32,8 +33,8 @@ class App extends StatelessWidget {
        Get.put(LoginController(loginUsecase: usecaseConfig.loginUsecase!));
        Get.put(EventsController(eventsUsecase: usecaseConfig.eventsUsecase!));
        Get.put(EventByIdController(eventByIdUsecase: usecaseConfig.eventByIdUsecase!));
-
-      Get.put(PerfilController(userDataUsecase: usecaseConfig.userDataUsecase!));
+       Get.put(DashboardsController(userDebtsUsecase: usecaseConfig.userDebtsUsecase!));
+       Get.put(PerfilController(userDataUsecase: usecaseConfig.userDataUsecase!));
 
        
       }),

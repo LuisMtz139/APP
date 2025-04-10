@@ -1,7 +1,7 @@
-import 'package:app_cirugia_endoscopica/Page/perfil/perfil_page.dart';
+import 'package:app_cirugia_endoscopica/features/users/presentation/perfil/perfil_page.dart';
 import 'package:app_cirugia_endoscopica/features/events/presentation/events/event_page.dart';
 import 'package:get/get.dart';
-import 'package:app_cirugia_endoscopica/Page/dashboards/dashboards_page.dart';
+import 'package:app_cirugia_endoscopica/features/users/presentation/dashboards/dashboards_page.dart';
 import 'package:flutter/material.dart';
 
 class HomeController extends GetxController {

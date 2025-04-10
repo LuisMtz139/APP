@@ -7,11 +7,14 @@ import 'package:app_cirugia_endoscopica/features/users/data/datasources/user_dat
 import 'package:app_cirugia_endoscopica/features/users/data/repositories/user_repository_imp.dart';
 import 'package:app_cirugia_endoscopica/features/users/domain/usecases/user_data_usecase.dart';
 import 'package:app_cirugia_endoscopica/features/users/domain/usecases/login_usecase.dart';
+import 'package:app_cirugia_endoscopica/features/users/domain/usecases/user_debts_usecase.dart';
 
 class UsecaseConfig {
   UserDataSourcesImp? userDataSourcesImp;
   UserRepositoryImpl? userRepositoryImpl;
   LoginUsecase? loginUsecase;
+  UserDebtsUsecase? userDebtsUsecase;
+
   
   UserDataUsecase? userDataUsecase;
   EventDataSourcesImp? eventDataSourcesImp;
@@ -22,6 +25,7 @@ class UsecaseConfig {
     userDataSourcesImp = UserDataSourcesImp();
     userRepositoryImpl = UserRepositoryImpl(userDataSources: userDataSourcesImp!);
     loginUsecase = LoginUsecase(userRepository: userRepositoryImpl!);
+    userDebtsUsecase = UserDebtsUsecase(userRepository: userRepositoryImpl!);
 
     eventDataSourcesImp = EventDataSourcesImp();
     eventRepositoryImpl = EventRepositoryImp(userDataSources: eventDataSourcesImp!);

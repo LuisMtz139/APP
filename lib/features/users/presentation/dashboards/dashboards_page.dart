@@ -1,5 +1,7 @@
 import 'package:app_cirugia_endoscopica/common/theme/App_Theme.dart';
+import 'package:app_cirugia_endoscopica/features/users/presentation/dashboards/dashboards_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class DashboardsPage extends StatefulWidget {
   @override
@@ -8,6 +10,7 @@ class DashboardsPage extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardsPage> {
   int _selectedIndex = 0;
+  final DashboardsController controller = Get.find<DashboardsController>();
 
   @override
   Widget build(BuildContext context) {
@@ -90,60 +93,41 @@ class _DashboardScreenState extends State<DashboardsPage> {
     );
   }
 
-  Widget _buildStatusCardsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Mis Datos',
-              style: MedicalTheme.headingSmall,
-            ),
-            Text(
-              'Ver todo',
-              style: TextStyle(
-                color: MedicalTheme.primaryColor,
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 130,
-          child: ListView(
-            physics: const BouncingScrollPhysics(),
-            scrollDirection: Axis.horizontal,
-            children: [
-              _buildEnhancedStatusCard(
-                "Estatus Documentos", 
-                "Aprobados", 
-                Icons.check_circle_rounded,
-                MedicalTheme.successColor,
-              ),
-              const SizedBox(width: 16),
-              _buildEnhancedStatusCard(
-                "Membresía", 
-                "Activa", 
-                Icons.card_membership_rounded,
-                MedicalTheme.primaryColor,
-              ),
-              const SizedBox(width: 16),
-              _buildEnhancedStatusCard(
-                "Certificaciones", 
-                "3 Vigentes", 
-                Icons.verified_rounded,
-                MedicalTheme.infoColor,
-              ),
-            ],
+ // Luego, en _buildStatusCardsSection()
+// Luego, en _buildStatusCardsSection()
+Widget _buildStatusCardsSection() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Mis Datos',
+            style: MedicalTheme.headingSmall,
           ),
-        ),
-      ],
-    );
-  }
+        ],
+      ),
+      const SizedBox(height: 16),
+      SizedBox(
+        height: 130,
+        child: Obx(() {
+          if (controller.isLoading.value) {
+            return Center(child: CircularProgressIndicator());
+          } else if (controller.error.value.isNotEmpty) {
+            return Center(child: Text(controller.error.value));
+          } else {
+            return ListView(
+              physics: const BouncingScrollPhysics(),
+              scrollDirection: Axis.horizontal,
+              children: controller.buildStatusCards(),
+            );
+          }
+        }),
+      ),
+    ],
+  );
+}
 
   Widget _buildEnhancedStatusCard(String title, String status, IconData icon, Color iconColor) {
     return Container(

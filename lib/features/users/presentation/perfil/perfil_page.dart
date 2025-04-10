@@ -1,4 +1,4 @@
-import 'package:app_cirugia_endoscopica/Page/perfil/perfil_controller.dart';
+import 'package:app_cirugia_endoscopica/features/users/presentation/perfil/perfil_controller.dart';
 import 'package:app_cirugia_endoscopica/common/theme/App_Theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
