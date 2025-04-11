@@ -153,6 +153,6 @@ class EventByIdController extends GetxController {
     final int registered = event.value!.usuariosInscritos;
     final int available = total - registered;
     
-    return '$available disponibles de $total cupos';
+    return '$available / $total ';
   }
 }

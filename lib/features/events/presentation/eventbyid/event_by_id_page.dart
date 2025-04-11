@@ -619,70 +619,80 @@ class EventByIdPage extends StatelessWidget {
         ],
       ),
     );
+  }Widget _buildPricesSection() {
+  final Map<String, String?> prices = controller.getPricesMap();
+  
+  if (prices.isEmpty) {
+    return SizedBox.shrink();
   }
-
-  Widget _buildPricesSection() {
-    final Map<String, String?> prices = controller.getPricesMap();
-    
-    if (prices.isEmpty) {
-      return SizedBox.shrink();
-    }
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Precios',
-          style: MedicalTheme.headingSmall,
-        ),
-        SizedBox(height: 16),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 2.5,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-          ),
-          itemCount: prices.length,
-          itemBuilder: (context, index) {
-            final entry = prices.entries.elementAt(index);
-            final membershipType = entry.key;
-            final price = entry.value!;
-            final moneda = controller.event.value!.monedaPrecios;
-            
-            return Container(
-              padding: EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: MedicalTheme.surfaceColor,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    membershipType,
-                    style: MedicalTheme.bodySmall,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    '$moneda $price',
-                    style: MedicalTheme.subtitleLarge.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: MedicalTheme.primaryColor,
+  
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        'Precios',
+        style: MedicalTheme.headingSmall,
+      ),
+      SizedBox(height: 16),
+      LayoutBuilder(
+        builder: (context, constraints) {
+          // Determinar si debemos usar una o dos columnas basado en el ancho disponible
+          final crossAxisCount = constraints.maxWidth > 500 ? 2 : 1;
+          // Ajustar la relación de aspecto para adaptarse mejor al contenido
+          final childAspectRatio = crossAxisCount == 1 ? 3.5 : 2.5;
+          
+          return GridView.builder(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              childAspectRatio: childAspectRatio,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+            ),
+            itemCount: prices.length,
+            itemBuilder: (context, index) {
+              final entry = prices.entries.elementAt(index);
+              final membershipType = entry.key;
+              final price = entry.value!;
+              final moneda = controller.event.value!.monedaPrecios;
+              
+              return Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: MedicalTheme.surfaceColor,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      membershipType,
+                      style: MedicalTheme.bodySmall,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-      ],
-    );
-  }
+                    SizedBox(height: 4),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '$moneda $price',
+                        style: MedicalTheme.subtitleLarge.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: MedicalTheme.primaryColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        }
+      ),
+    ],
+  );
+}
 }
