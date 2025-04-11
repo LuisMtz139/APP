@@ -18,12 +18,10 @@ class EventByIdController extends GetxController {
   void onInit() {
     super.onInit();
     
-    // Manejo seguro de argumentos
     if (Get.arguments != null && Get.arguments is Map && Get.arguments.containsKey('eventId')) {
       final String eventId = Get.arguments['eventId'] as String;
       loadEvent(eventId);
     } else {
-      // Si no hay argumentos o no tienen el formato esperado, mostrar error
       hasError.value = true;
       errorMessage.value = 'No se pudo obtener el ID del evento';
       isLoading.value = false;

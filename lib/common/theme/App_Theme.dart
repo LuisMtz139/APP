@@ -179,8 +179,8 @@ class MedicalTheme {
     
     // AppBar theme
     appBarTheme: AppBarTheme(
-      backgroundColor: backgroundColor,
-      foregroundColor: textPrimaryColor,
+      backgroundColor: textPrimaryColor,
+      foregroundColor: backgroundColor,
       elevation: 0,
       iconTheme: IconThemeData(color: textPrimaryColor),
       titleTextStyle: headingSmall,

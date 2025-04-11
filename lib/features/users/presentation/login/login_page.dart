@@ -14,6 +14,10 @@ class LoginPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: MedicalTheme.backgroundColor,
+       appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(0),
+        child: AppBar(), 
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(
@@ -129,7 +133,7 @@ class LoginPage extends StatelessWidget {
                   QuickAlert.show(
                     context: Get.context!,
                     type: QuickAlertType.error,
-                    title: 'Error',
+                    title: 'Acceso Incorrecto ',
                     text: 'Debes aceptar los términos y condiciones para continuar',
                     confirmBtnColor: MedicalTheme.primaryColor,
                   );

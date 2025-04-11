@@ -1,75 +1,118 @@
 import 'package:app_cirugia_endoscopica/common/theme/App_Theme.dart';
-import 'package:app_cirugia_endoscopica/features/events/presentation/eventbyid/event_controller.dart';
+import 'package:app_cirugia_endoscopica/features/events/presentation/eventbyid/event_by_id_controller.dart';
+import 'package:app_cirugia_endoscopica/features/events/presentation/eventbyid/widget/event_skeleton_loading.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class EventByIdPage extends StatelessWidget {
-    final String eventId;
+  final String eventId;
   
-  // Constructor con parámetro requerido
   EventByIdPage({Key? key, required this.eventId}) : super(key: key);
   
-  // Controlador local para esta página
-final EventByIdController controller = Get.find<EventByIdController>();
+  final EventByIdController controller = Get.find<EventByIdController>();
   
   @override
   Widget build(BuildContext context) {
-    // Cargar el evento al construir la página
     controller.loadEvent(eventId);
+    
     return Scaffold(
       backgroundColor: MedicalTheme.backgroundColor,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_rounded, color: MedicalTheme.primaryColor),
-          onPressed: () => Get.back(),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(0),
+        child: AppBar(
+          backgroundColor: MedicalTheme.primaryColor,
+          elevation: 0,
         ),
-        title: Text('Detalles del evento', style: MedicalTheme.headingSmall),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.share_rounded, color: MedicalTheme.primaryColor),
-            onPressed: () {
-              // Funcionalidad para compartir
-            },
+      ),
+      body: Column(
+        children: [
+          // Custom AppBar
+          Container(
+            color: MedicalTheme.backgroundColor,
+            child: Padding(
+              padding: EdgeInsets.only(
+                top: MediaQuery.of(context).padding.top,
+              ),
+              child: AppBar(
+                primary: false,
+                backgroundColor: MedicalTheme.backgroundColor,
+                elevation: 0,
+                automaticallyImplyLeading: false,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_rounded),
+                  color: MedicalTheme.primaryColor,
+                  onPressed: () => Get.back(),
+                ),
+                title: Column(
+                  children: [
+                    Text(
+                      "DETALLES DEL EVENTO",
+                      style: TextStyle(
+                        color: MedicalTheme.textPrimaryColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Obx(() {
+                      final tipoEvento = controller.event.value?.tipoEvento ?? 'Evento';
+                      return Text(
+                        "Información completa sobre este $tipoEvento",
+                        style: TextStyle(
+                          color: MedicalTheme.textSecondaryColor,
+                          fontSize: 12,
+                        ),
+                        textAlign: TextAlign.center,
+                      );
+                    }),
+                  ],
+                ),
+                centerTitle: true,
+               
+              ),
+            ),
+          ),
+          
+          // Content
+          Expanded(
+            child: Obx(() {
+              if (controller.isLoading.value) {
+                return EventSkeletonLoading();
+              }
+
+              if (controller.hasError.value) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline_rounded, size: 60, color: MedicalTheme.errorColor),
+                      SizedBox(height: 16),
+                      Text(
+                        controller.errorMessage.value,
+                        style: MedicalTheme.subtitleMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: () => Get.back(),
+                        child: Text('Volver'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              if (controller.event.value == null) {
+                return Center(
+                  child: Text('No se encontró información del evento'),
+                );
+              }
+
+              return _buildEventDetails();
+            }),
           ),
         ],
       ),
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return Center(child: CircularProgressIndicator());
-        }
-
-        if (controller.hasError.value) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.error_outline_rounded, size: 60, color: MedicalTheme.errorColor),
-                SizedBox(height: 16),
-                Text(
-                  controller.errorMessage.value,
-                  style: MedicalTheme.subtitleMedium,
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () => Get.back(),
-                  child: Text('Volver'),
-                ),
-              ],
-            ),
-          );
-        }
-
-        if (controller.event.value == null) {
-          return Center(
-            child: Text('No se encontró información del evento'),
-          );
-        }
-
-        return _buildEventDetails();
-      }),
       bottomNavigationBar: Obx(() {
         if (controller.isLoading.value || controller.hasError.value || controller.event.value == null) {
           return SizedBox.shrink();
@@ -270,6 +313,11 @@ final EventByIdController controller = Get.find<EventByIdController>();
   }
 
   Widget _buildEventBanner(dynamic event, List<Color> gradientColors) {
+    // URL de la imagen para mostrar
+    final String imageUrl = event.posterS3Llave.isNotEmpty 
+        ? event.posterS3Llave 
+        : event.bannerS3Llave;
+    
     return Container(
       height: 200,
       width: double.infinity,
@@ -279,13 +327,9 @@ final EventByIdController controller = Get.find<EventByIdController>();
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        image: event.bannerS3Llave.isNotEmpty || event.posterS3Llave.isNotEmpty
+        image: imageUrl.isNotEmpty
             ? DecorationImage(
-                image: NetworkImage(
-                  event.posterS3Llave.isNotEmpty 
-                      ? event.posterS3Llave 
-                      : event.bannerS3Llave
-                ),
+                image: NetworkImage(imageUrl),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
                   Colors.black.withOpacity(0.3),
@@ -322,6 +366,30 @@ final EventByIdController controller = Get.find<EventByIdController>();
             ),
           ),
           
+          // Botón para ver la imagen completa (solo visible si hay imagen)
+          if (imageUrl.isNotEmpty)
+            Positioned(
+              top: 16,
+              right: 16,
+              child: GestureDetector(
+                onTap: () {
+                  _showFullImage(imageUrl);
+                },
+                child: Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.4),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.visibility,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+              ),
+            ),
+          
           // Event icon and tag
           Positioned(
             bottom: 20,
@@ -354,6 +422,107 @@ final EventByIdController controller = Get.find<EventByIdController>();
           ),
         ],
       ),
+    );
+  }
+
+  // Método para mostrar la imagen completa en un diálogo
+  void _showFullImage(String imageUrl) {
+    Get.dialog(
+      Dialog(
+        insetPadding: EdgeInsets.all(8),
+        backgroundColor: Colors.transparent,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Botón de cerrar en la parte superior derecha
+            Align(
+              alignment: Alignment.topRight,
+              child: GestureDetector(
+                onTap: () {
+                  Get.back();
+                },
+                child: Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.6),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 8),
+            // Imagen a pantalla completa con posibilidad de zoom
+            Flexible(
+              child: InteractiveViewer(
+                panEnabled: true,
+                boundaryMargin: EdgeInsets.all(20),
+                minScale: 0.5,
+                maxScale: 4,
+                child: Hero(
+                  tag: 'event_image',
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.5),
+                          spreadRadius: 5,
+                          blurRadius: 7,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        imageUrl,
+                        fit: BoxFit.contain,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            height: Get.height * 0.6,
+                            width: Get.width,
+                            color: Colors.black,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded / 
+                                      loadingProgress.expectedTotalBytes!
+                                    : null,
+                                color: MedicalTheme.primaryColor,
+                              ),
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 200,
+                            width: Get.width,
+                            color: Colors.grey[900],
+                            child: Center(
+                              child: Text(
+                                'Error al cargar la imagen',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      barrierColor: Colors.black87,
     );
   }
 
@@ -505,6 +674,7 @@ final EventByIdController controller = Get.find<EventByIdController>();
                     style: MedicalTheme.subtitleLarge.copyWith(
                       fontWeight: FontWeight.bold,
                       color: MedicalTheme.primaryColor,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],

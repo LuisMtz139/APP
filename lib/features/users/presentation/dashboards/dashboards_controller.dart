@@ -113,7 +113,8 @@ class DashboardsController extends GetxController {
       const SizedBox(width: 16),
       _buildEnhancedStatusCard(
         "Adeudos Pendientes", 
-        "${totalAdeudos.value} (${montoTotalPendiente.value.toStringAsFixed(2)})", 
+        //${totalAdeudos.value} (
+        "${montoTotalPendiente.value.toStringAsFixed(2)}", 
         Icons.account_balance_wallet,
         _getColorByAdeudos(totalAdeudos.value),
       ),

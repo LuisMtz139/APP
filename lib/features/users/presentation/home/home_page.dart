@@ -70,7 +70,8 @@ class HomePage extends StatelessWidget {
   
   AppBar _buildCommonAppBar() {
     return AppBar(
-      backgroundColor: MedicalTheme.backgroundColor,
+      backgroundColor: MedicalTheme.primaryColor,
+      //textPrimaryColor
       elevation: 0,
       title: Row(
         children: [
