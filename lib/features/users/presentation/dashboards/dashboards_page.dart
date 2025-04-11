@@ -209,31 +209,7 @@ Widget _buildStatusCardsSection() {
                 ),
               ],
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: MedicalTheme.surfaceColor,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                children: [
-                  Text(
-                    'Filtrar',
-                    style: TextStyle(
-                      color: MedicalTheme.primaryColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(
-                    Icons.filter_list_rounded,
-                    color: MedicalTheme.primaryColor,
-                    size: 18,
-                  ),
-                ],
-              ),
-            ),
+          
           ],
         ),
         const SizedBox(height: 20),
@@ -511,33 +487,7 @@ Widget _buildStatusCardsSection() {
             ],
           ),
           const SizedBox(height: 20),
-          // Search bar
-          Container(
-            height: 50,
-            decoration: BoxDecoration(
-              color: MedicalTheme.surfaceColor,
-              borderRadius: BorderRadius.circular(15),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Buscar eventos, documentos...',
-                hintStyle: MedicalTheme.subtitleMedium,
-                prefixIcon: Icon(
-                  Icons.search_rounded,
-                  color: MedicalTheme.textSecondaryColor,
-                ),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-              ),
-            ),
-          ),
+         
         ],
       ),
     );
@@ -879,68 +829,7 @@ class _SliverStatusCardDelegate extends SliverPersistentHeaderDelegate {
                   ],
                 ),
                 SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 15,
-                          backgroundColor: gradientColors[0].withOpacity(0.2),
-                          child: Text(
-                            "DU",
-                            style: TextStyle(
-                              color: gradientColors[0],
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 4),
-                        CircleAvatar(
-                          radius: 15,
-                          backgroundColor: gradientColors[0].withOpacity(0.2),
-                          child: Text(
-                            "CM",
-                            style: TextStyle(
-                              color: gradientColors[0],
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 4),
-                        CircleAvatar(
-                          radius: 15,
-                          backgroundColor: gradientColors[0].withOpacity(0.2),
-                          child: Text(
-                            "+3",
-                            style: TextStyle(
-                              color: gradientColors[0],
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: gradientColors[0].withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        "Registrarme",
-                        style: TextStyle(
-                          color: gradientColors[0],
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+               
               ],
             ),
           ),
