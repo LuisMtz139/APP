@@ -384,68 +384,7 @@ Widget _buildStatusCardsSection() {
                   ],
                 ),
                 SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 15,
-                          backgroundColor: gradientColors[0].withOpacity(0.2),
-                          child: Text(
-                            "DU",
-                            style: TextStyle(
-                              color: gradientColors[0],
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 4),
-                        CircleAvatar(
-                          radius: 15,
-                          backgroundColor: gradientColors[0].withOpacity(0.2),
-                          child: Text(
-                            "CM",
-                            style: TextStyle(
-                              color: gradientColors[0],
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 4),
-                        CircleAvatar(
-                          radius: 15,
-                          backgroundColor: gradientColors[0].withOpacity(0.2),
-                          child: Text(
-                            "+3",
-                            style: TextStyle(
-                              color: gradientColors[0],
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: gradientColors[0].withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        "Registrarme",
-                        style: TextStyle(
-                          color: gradientColors[0],
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                
               ],
             ),
           ),
