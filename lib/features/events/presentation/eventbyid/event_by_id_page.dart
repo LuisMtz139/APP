@@ -630,68 +630,270 @@ class EventByIdPage extends StatelessWidget {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text(
-        'Precios',
+        'Costo',
         style: MedicalTheme.headingSmall,
       ),
+      
+      // Información de la membresía actual
       SizedBox(height: 16),
-      LayoutBuilder(
-        builder: (context, constraints) {
-          // Determinar si debemos usar una o dos columnas basado en el ancho disponible
-          final crossAxisCount = constraints.maxWidth > 500 ? 2 : 1;
-          // Ajustar la relación de aspecto para adaptarse mejor al contenido
-          final childAspectRatio = crossAxisCount == 1 ? 3.5 : 2.5;
-          
-          return GridView.builder(
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              childAspectRatio: childAspectRatio,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-            ),
-            itemCount: prices.length,
-            itemBuilder: (context, index) {
-              final entry = prices.entries.elementAt(index);
-              final membershipType = entry.key;
-              final price = entry.value!;
-              final moneda = controller.event.value!.monedaPrecios;
-              
-              return Container(
-                padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: MedicalTheme.surfaceColor,
-                  borderRadius: BorderRadius.circular(8),
+      Obx(() {
+        if (controller.isLoadingMembership.value) {
+          return Row(
+            children: [
+              SizedBox(
+                height: 16,
+                width: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: MedicalTheme.primaryColor,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Consultando tu membresía...',
+                style: MedicalTheme.bodySmall.copyWith(
+                  color: MedicalTheme.textSecondaryColor,
+                ),
+              ),
+            ],
+          );
+        }
+
+        // Buscar el precio correspondiente a la membresía del usuario
+        String? userMembershipPrice;
+        String userMembershipType = '';
+        
+        for (final entry in prices.entries) {
+          if (entry.key.toLowerCase() == controller.membresiaNombre.value.toLowerCase()) {
+            userMembershipPrice = entry.value;
+            userMembershipType = entry.key;
+            break;
+          }
+        }
+        
+        // Si encontramos un precio para la membresía del usuario
+        if (userMembershipPrice != null) {
+          final moneda = controller.event.value!.monedaPrecios;
+          
+          return Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: MedicalTheme.primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: MedicalTheme.primaryColor,
+                width: 1.5,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Text(
-                      membershipType,
-                      style: MedicalTheme.bodySmall,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    Icon(
+                      Icons.card_membership_rounded,
+                      size: 20,
+                      color: MedicalTheme.primaryColor,
                     ),
-                    SizedBox(height: 4),
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
+                    SizedBox(width: 10),
+                    Expanded(
                       child: Text(
-                        '$moneda $price',
-                        style: MedicalTheme.subtitleLarge.copyWith(
+                        'Tu precio como ${controller.membresiaNombre.value}',
+                        style: MedicalTheme.subtitleMedium.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: MedicalTheme.primaryColor,
+                          color: MedicalTheme.textPrimaryColor,
                         ),
                       ),
                     ),
                   ],
                 ),
-              );
-            },
+                SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      userMembershipType,
+                      style: MedicalTheme.bodyMedium.copyWith(
+                        color: MedicalTheme.textSecondaryColor,
+                      ),
+                    ),
+                    Text(
+                      '$moneda $userMembershipPrice',
+                      style: MedicalTheme.headingSmall.copyWith(
+                        color: MedicalTheme.primaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        } else {
+          // Si no encontramos un precio específico para la membresía del usuario
+          return Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: MedicalTheme.surfaceColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      size: 20,
+                      color: Colors.orange,
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Información de precios',
+                        style: MedicalTheme.subtitleMedium.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12),
+                Text(
+                  'Tu membresía actual (${controller.membresiaNombre.value}) no tiene un precio específico para este evento. Consulta todos los precios disponibles a continuación.',
+                  style: MedicalTheme.bodyMedium,
+                ),
+                
+                // Botón para mostrar todos los precios
+                SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {
+                     
+                      controller.showAllPrices.value = true;
+                    },
+                    child: Text('Ver todos los precios'),
+                  ),
+                ),
+              ],
+            ),
           );
         }
-      ),
+      }),
+      
+      // Esta sección solo se mostrará si el usuario solicita ver todos los precios
+      Obx(() {
+        // Necesitarás agregar esta variable en el controlador: final RxBool showAllPrices = false.obs;
+        if (!controller.showAllPrices.value) {
+          return SizedBox.shrink();
+        }
+        
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Todos los precios',
+                  style: MedicalTheme.subtitleLarge,
+                ),
+                TextButton(
+                  onPressed: () {
+                    controller.showAllPrices.value = false;
+                  },
+                  child: Text('Ocultar'),
+                ),
+              ],
+            ),
+            SizedBox(height: 12),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final crossAxisCount = constraints.maxWidth > 500 ? 2 : 1;
+                final childAspectRatio = crossAxisCount == 1 ? 3.5 : 2.5;
+                
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    childAspectRatio: childAspectRatio,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
+                  itemCount: prices.length,
+                  itemBuilder: (context, index) {
+                    final entry = prices.entries.elementAt(index);
+                    final membershipType = entry.key;
+                    final price = entry.value!;
+                    final moneda = controller.event.value!.monedaPrecios;
+                    
+                    final bool isUserMembership = membershipType.toLowerCase() == 
+                        controller.membresiaNombre.value.toLowerCase();
+                    
+                    return Container(
+                      padding: EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isUserMembership 
+                            ? MedicalTheme.primaryColor.withOpacity(0.1) 
+                            : MedicalTheme.surfaceColor,
+                        borderRadius: BorderRadius.circular(8),
+                        border: isUserMembership
+                            ? Border.all(color: MedicalTheme.primaryColor, width: 1.5)
+                            : null,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  membershipType,
+                                  style: MedicalTheme.bodySmall.copyWith(
+                                    fontWeight: isUserMembership 
+                                        ? FontWeight.bold 
+                                        : FontWeight.normal,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (isUserMembership)
+                                Icon(
+                                  Icons.check_circle,
+                                  color: MedicalTheme.primaryColor,
+                                  size: 16,
+                                ),
+                            ],
+                          ),
+                          SizedBox(height: 4),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              '$moneda $price',
+                              style: MedicalTheme.subtitleLarge.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: MedicalTheme.primaryColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              }
+            ),
+          ],
+        );
+      }),
     ],
   );
 }

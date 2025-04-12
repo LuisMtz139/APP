@@ -7,7 +7,7 @@ class UserDebtsModel extends UserDebtsEntity {
     required int idUsuario,
     required String tipoAdeudo,
     int? fechaMembresia,
-    String? nombreMembresia,
+    required String nombreMembresia,
     int? membresiaId,
     String? eventoId,
     required String monto,

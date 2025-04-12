@@ -1,3 +1,5 @@
+import 'package:app_cirugia_endoscopica/features/users/domain/entities/user_data_entity.dart';
+import 'package:app_cirugia_endoscopica/features/users/domain/usecases/user_data_usecase.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:app_cirugia_endoscopica/common/theme/App_Theme.dart';
@@ -5,28 +7,54 @@ import 'package:app_cirugia_endoscopica/features/users/domain/entities/userdebts
 import 'package:app_cirugia_endoscopica/features/users/domain/usecases/user_debts_usecase.dart';
 
 class DashboardsController extends GetxController {
-  final UserDebtsUsecase _userDebtsUsecase;
+    final UserDebtsUsecase _userDebtsUsecase;
+  final UserDataUsecase _userDataUsecase; // Agregamos el caso de uso
   
-  // Variables observables
+  // Variables observables existentes
   final RxList<UserDebtsEntity> userDebts = <UserDebtsEntity>[].obs;
   final RxBool isLoading = true.obs;
   final RxString error = ''.obs;
   
-  // Variables para datos de tarjetas de estatus
+  // Agregamos variables para datos del usuario
+  final Rx<UserDataEntity?> userData = Rx<UserDataEntity?>(null);
+  final RxString userName = 'Cargando...'.obs;
+
+  // Variables para datos de tarjetas de estatus (existentes)
   final RxString membresiaNombre = 'Cargando...'.obs;
   final RxString membresiaEstatus = 'Cargando...'.obs;
   final RxString totalAdeudos = '0'.obs;
   final RxDouble montoTotalPendiente = 0.0.obs;
 
-  DashboardsController({required UserDebtsUsecase userDebtsUsecase}) 
-    : _userDebtsUsecase = userDebtsUsecase;
+  DashboardsController({
+    required UserDebtsUsecase userDebtsUsecase,
+    required UserDataUsecase userDataUsecase,
+  }) : 
+    _userDebtsUsecase = userDebtsUsecase,
+    _userDataUsecase = userDataUsecase;
 
   @override
   void onInit() {
     super.onInit();
+        fetchUserData(); 
     fetchUserDebts();
   }
-
+Future<void> fetchUserData() async {
+    try {
+      // Obtenemos datos del usuario
+      final userDataList = await _userDataUsecase.execute();
+      
+      if (userDataList.isNotEmpty) {
+        userData.value = userDataList.first;
+        // Formateamos el nombre completo (con título "Dr." si es necesario)
+        userName.value = "Dr. ${userData.value!.nombre} ${userData.value!.apellidoPaterno}";
+      } else {
+        userName.value = "Usuario";
+      }
+    } catch (e) {
+      print('Error en fetchUserData: ${e.toString()}');
+      userName.value = "Usuario";
+    }
+  }
   Future<void> fetchUserDebts() async {
     try {
       isLoading.value = true;

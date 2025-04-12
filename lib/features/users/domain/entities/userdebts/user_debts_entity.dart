@@ -3,7 +3,7 @@ class UserDebtsEntity {
   final int idUsuario;
   final String tipoAdeudo;
   final int? fechaMembresia;
-  final String? nombreMembresia;
+  final String nombreMembresia;
   final int? membresiaId;
   final String? eventoId;
   final String monto;
@@ -21,7 +21,7 @@ class UserDebtsEntity {
     required this.idUsuario,
     required this.tipoAdeudo,
     this.fechaMembresia,
-    this.nombreMembresia,
+   required this.nombreMembresia,
     this.membresiaId,
     this.eventoId,
     required this.monto,

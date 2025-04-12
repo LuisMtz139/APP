@@ -1,22 +1,37 @@
 import 'package:app_cirugia_endoscopica/features/events/domain/entities/events/events_entity.dart';
 import 'package:app_cirugia_endoscopica/features/events/domain/usecases/event_by_id_usecase.dart';
+import 'package:app_cirugia_endoscopica/features/users/domain/entities/userdebts/user_debts_entity.dart';
+import 'package:app_cirugia_endoscopica/features/users/domain/usecases/user_debts_usecase.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 class EventByIdController extends GetxController {
-  final EventByIdUsecase eventByIdUsecase;
-
-  EventByIdController({required this.eventByIdUsecase});
+ final EventByIdUsecase eventByIdUsecase;
+  final UserDebtsUsecase userDebtsUsecase; // Nuevo caso de uso
+// Agregar en la lista de variables del controlador
+final RxBool showAllPrices = false.obs;
+  EventByIdController({
+    required this.eventByIdUsecase,
+    required this.userDebtsUsecase, // Agregamos el parámetro
+  });
 
   final Rx<EventsEntity?> event = Rx<EventsEntity?>(null);
   final RxBool isLoading = true.obs;
   final RxBool hasError = false.obs;
   final RxString errorMessage = ''.obs;
+  
+  // Variables para datos de membresía
+  final RxList<UserDebtsEntity> userDebts = <UserDebtsEntity>[].obs;
+  final RxString membresiaNombre = 'Cargando...'.obs;
+  final RxBool isLoadingMembership = true.obs;
 
   @override
   void onInit() {
     super.onInit();
+    
+    // Cargamos los datos de la membresía
+    fetchUserDebts();
     
     if (Get.arguments != null && Get.arguments is Map && Get.arguments.containsKey('eventId')) {
       final String eventId = Get.arguments['eventId'] as String;
@@ -26,8 +41,42 @@ class EventByIdController extends GetxController {
       errorMessage.value = 'No se pudo obtener el ID del evento';
       isLoading.value = false;
     }
+  }Future<void> fetchUserDebts() async {
+    try {
+      isLoadingMembership.value = true;
+      
+      // Obtener datos de adeudos
+      final debts = await userDebtsUsecase.execute();
+      userDebts.value = debts;
+      
+      // Procesar datos para encontrar la membresía
+      _processDebtsData();
+      
+    } catch (e) {
+      print('Error al cargar datos de membresía: ${e.toString()}');
+    } finally {
+      isLoadingMembership.value = false;
+    }
   }
+ void _processDebtsData() {
+    // Si no hay adeudos, establecer valores predeterminados
+    if (userDebts.isEmpty) {
+      membresiaNombre.value = 'No disponible';
+      return;
+    }
 
+    // Filtrar adeudos por tipo membresía
+    final membresiaDebt = userDebts.firstWhereOrNull(
+      (debt) => debt.tipoAdeudo.toLowerCase() == 'membresia'
+    );
+
+    // Establecer datos de membresía
+    if (membresiaDebt != null) {
+      membresiaNombre.value = membresiaDebt.nombreMembresia ?? 'No especificada';
+    } else {
+      membresiaNombre.value = 'No disponible';
+    }
+  }
   Future<void> loadEvent(String id) async {
     try {
       isLoading.value = true;

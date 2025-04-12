@@ -392,45 +392,44 @@ Widget _buildStatusCardsSection() {
       ),
     );
   }
-  Widget _buildHeaderSection() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Bienvenido de nuevo,',
-                      style: MedicalTheme.bodyMedium.copyWith(
-                        color: MedicalTheme.textSecondaryColor,
-                      ),
+  // En DashboardsPage.dart
+Widget _buildHeaderSection() {
+  return Container(
+    padding: const EdgeInsets.symmetric(vertical: 16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Bienvenido de nuevo,',
+                    style: MedicalTheme.bodyMedium.copyWith(
+                      color: MedicalTheme.textSecondaryColor,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Dr. Ulibarri',
-                      style: MedicalTheme.headingLarge.copyWith(
-                        fontSize: 30,
-                        color: MedicalTheme.primaryColor,
-                      ),
+                  ),
+                  const SizedBox(height: 4),
+                  Obx(() => Text(
+                    controller.userName.value,
+                    style: MedicalTheme.headingLarge.copyWith(
+                      fontSize: 30,
+                      color: MedicalTheme.primaryColor,
                     ),
-                  ],
-                ),
+                  )),
+                ],
               ),
-             
-            ],
-          ),
-          const SizedBox(height: 20),
-         
-        ],
-      ),
-    );
-  }
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+      ],
+    ),
+  );
+}
 
 }
 
