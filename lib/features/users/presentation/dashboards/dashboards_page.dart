@@ -484,7 +484,7 @@ class _SliverStatusCardDelegate extends SliverPersistentHeaderDelegate {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Dr. Ulibarri',
+                      '',
                       style: MedicalTheme.headingLarge.copyWith(
                         fontSize: 30,
                         color: MedicalTheme.primaryColor,

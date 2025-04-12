@@ -7,20 +7,18 @@ import 'package:app_cirugia_endoscopica/features/users/domain/entities/userdebts
 import 'package:app_cirugia_endoscopica/features/users/domain/usecases/user_debts_usecase.dart';
 
 class DashboardsController extends GetxController {
-    final UserDebtsUsecase _userDebtsUsecase;
-  final UserDataUsecase _userDataUsecase; // Agregamos el caso de uso
-  
-  // Variables observables existentes
+  final UserDebtsUsecase _userDebtsUsecase;
+  final UserDataUsecase _userDataUsecase;
+
   final RxList<UserDebtsEntity> userDebts = <UserDebtsEntity>[].obs;
   final RxBool isLoading = true.obs;
   final RxString error = ''.obs;
-  
-  // Agregamos variables para datos del usuario
+
   final Rx<UserDataEntity?> userData = Rx<UserDataEntity?>(null);
   final RxString userName = 'Cargando...'.obs;
 
-  // Variables para datos de tarjetas de estatus (existentes)
   final RxString membresiaNombre = 'Cargando...'.obs;
+  final RxString creadoEl = 'Cargando...'.obs;
   final RxString membresiaEstatus = 'Cargando...'.obs;
   final RxString totalAdeudos = '0'.obs;
   final RxDouble montoTotalPendiente = 0.0.obs;
@@ -28,25 +26,33 @@ class DashboardsController extends GetxController {
   DashboardsController({
     required UserDebtsUsecase userDebtsUsecase,
     required UserDataUsecase userDataUsecase,
-  }) : 
-    _userDebtsUsecase = userDebtsUsecase,
-    _userDataUsecase = userDataUsecase;
+  })  : _userDebtsUsecase = userDebtsUsecase,
+        _userDataUsecase = userDataUsecase;
 
   @override
   void onInit() {
     super.onInit();
-        fetchUserData(); 
+    fetchUserData();
     fetchUserDebts();
   }
-Future<void> fetchUserData() async {
+
+  Future<void> fetchUserData() async {
     try {
-      // Obtenemos datos del usuario
       final userDataList = await _userDataUsecase.execute();
-      
+
       if (userDataList.isNotEmpty) {
         userData.value = userDataList.first;
-        // Formateamos el nombre completo (con título "Dr." si es necesario)
-        userName.value = "Dr. ${userData.value!.nombre} ${userData.value!.apellidoPaterno}";
+        userName.value = "${userData.value!.nombre} ${userData.value!.apellidoPaterno}";
+        membresiaEstatus.value = userData.value!.estatus ?? 'No disponible';
+
+        final createdDate = DateTime.tryParse(userData.value!.creadoEl ?? '');
+        if (createdDate != null) {
+          final startYear = createdDate.year;
+          final endYear = startYear + 1;
+          creadoEl.value = "$startYear - $endYear";
+        } else {
+          creadoEl.value = "No disponible";
+        }
       } else {
         userName.value = "Usuario";
       }
@@ -55,18 +61,14 @@ Future<void> fetchUserData() async {
       userName.value = "Usuario";
     }
   }
+
   Future<void> fetchUserDebts() async {
     try {
       isLoading.value = true;
       error.value = '';
-      
-      // Obtener datos de adeudos
       final debts = await _userDebtsUsecase.execute();
       userDebts.value = debts;
-      
-      // Procesar datos para mostrar en tarjetas
       _processDebtsData();
-      
     } catch (e) {
       error.value = 'Error al cargar datos: ${e.toString()}';
       print('Error en fetchUserDebts: ${e.toString()}');
@@ -76,80 +78,74 @@ Future<void> fetchUserData() async {
   }
 
   void _processDebtsData() {
-    // Si no hay adeudos, establecer valores predeterminados
     if (userDebts.isEmpty) {
       membresiaNombre.value = 'No disponible';
+      creadoEl.value = 'No disponible';
       membresiaEstatus.value = 'No disponible';
       totalAdeudos.value = '0';
       montoTotalPendiente.value = 0.0;
       return;
     }
 
-    // Filtrar adeudos por tipo membresía
     final membresiaDebt = userDebts.firstWhereOrNull(
-      (debt) => debt.tipoAdeudo.toLowerCase() == 'membresia'
+      (debt) => debt.tipoAdeudo.toLowerCase() == 'membresia',
     );
 
-    // Establecer datos de membresía
     if (membresiaDebt != null) {
       membresiaNombre.value = membresiaDebt.nombreMembresia ?? 'No especificada';
-      membresiaEstatus.value = _formatEstatus(membresiaDebt.estatus);
     }
 
-    // Calcular total de adeudos pendientes
     final pendingDebts = userDebts.where(
-      (debt) => debt.estatus.toLowerCase() == 'pendiente'
+      (debt) => debt.estatus.toLowerCase() == 'pendiente',
     ).toList();
-    
+
     totalAdeudos.value = pendingDebts.length.toString();
-    
-    // Calcular monto total pendiente
+
     montoTotalPendiente.value = pendingDebts.fold(0.0, (prev, debt) {
-      return prev + (double.tryParse(debt.monto) ?? 0.0) - (double.tryParse(debt.cantidadPagada) ?? 0.0);
+      return prev +
+          (double.tryParse(debt.monto) ?? 0.0) -
+          (double.tryParse(debt.cantidadPagada) ?? 0.0);
     });
   }
 
-  String _formatEstatus(String estatus) {
-    switch (estatus.toLowerCase()) {
-      case 'pendiente':
-        return 'Pendiente';
-      case 'pagado':
-        return 'Activa';
-      case 'vencido':
-        return 'Vencida';
-      default:
-        return estatus;
-    }
-  }
-
-  // Método para construir las tarjetas de estado
   List<Widget> buildStatusCards() {
     return [
       _buildEnhancedStatusCard(
-        "Estatus Membresía", 
-        membresiaEstatus.value, 
+        "Estatus Documentos",
+        membresiaEstatus.value,
         Icons.card_membership_rounded,
         _getColorByEstatus(membresiaEstatus.value),
       ),
       const SizedBox(width: 16),
       _buildEnhancedStatusCard(
-        "Tipo Membresía", 
-        membresiaNombre.value, 
+        "Membresía",
+        membresiaNombre.value,
         Icons.verified_rounded,
         MedicalTheme.primaryColor,
       ),
       const SizedBox(width: 16),
+      GestureDetector(
+        onTap: () => showDebtsModal(),
+        child: _buildEnhancedStatusCard(
+          "Adeudos",
+          "${montoTotalPendiente.value.toStringAsFixed(2)}",
+          Icons.account_balance_wallet,
+          _getColorByAdeudos(totalAdeudos.value),
+          showDetailsHint: true,
+        ),
+      ),
+      const SizedBox(width: 16),
       _buildEnhancedStatusCard(
-        "Adeudos Pendientes", 
-        //${totalAdeudos.value} (
-        "${montoTotalPendiente.value.toStringAsFixed(2)}", 
-        Icons.account_balance_wallet,
-        _getColorByAdeudos(totalAdeudos.value),
+        "Miembro desde",
+        creadoEl.value,
+        Icons.person,
+        _getColorByAdeudos(creadoEl.value),
       ),
     ];
   }
 
-  Widget _buildEnhancedStatusCard(String title, String status, IconData icon, Color iconColor) {
+  Widget _buildEnhancedStatusCard(String title, String status, IconData icon, Color iconColor,
+      {bool showDetailsHint = false}) {
     return Container(
       width: 170,
       height: 130,
@@ -194,17 +190,86 @@ Future<void> fetchUserData() async {
             ),
           ),
           const SizedBox(height: 6),
-          Text(
-            status,
-            style: MedicalTheme.statusText.copyWith(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: MedicalTheme.textPrimaryColor,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                status,
+                style: MedicalTheme.statusText.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: MedicalTheme.textPrimaryColor,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (showDetailsHint) const SizedBox(height: 2),
+              if (showDetailsHint)
+                Text(
+                  "Ver detalles",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade500,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+            ],
           ),
         ],
+      ),
+    );
+  }
+
+  void showDebtsModal() {
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Container(
+          constraints: const BoxConstraints(maxHeight: 400, maxWidth: 300),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Detalle de Adeudos",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: Obx(() {
+                  if (userDebts.isEmpty) {
+                    return const Center(child: Text("Sin adeudos disponibles"));
+                  }
+
+                  return ListView.separated(
+                    itemCount: userDebts.length,
+                    separatorBuilder: (_, __) => const Divider(),
+                    itemBuilder: (_, index) {
+                      final debt = userDebts[index];
+                      return ListTile(
+                        title: Text(debt.tipoAdeudo),
+                        subtitle: Text("Monto: \$${debt.monto}"),
+                        trailing: Text(
+                          debt.estatus,
+                          style: TextStyle(
+                            color: debt.estatus.toLowerCase() == 'pendiente'
+                                ? Colors.orange
+                                : MedicalTheme.successColor,
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }),
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: () => Get.back(),
+                child: const Text("Cerrar"),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -218,19 +283,21 @@ Future<void> fetchUserData() async {
       case 'vencida':
         return Colors.red;
       default:
-        return MedicalTheme.primaryColor;
+        return MedicalTheme.successColor;
     }
   }
 
   Color _getColorByAdeudos(String totalAdeudos) {
     final total = int.tryParse(totalAdeudos) ?? 0;
-    
+
     if (total == 0) {
       return MedicalTheme.successColor;
-    } else if (total < 3) {
+    } else if (total < 4) {
       return Colors.orange;
-    } else {
+    } else if (total >= 4) {
       return Colors.red;
+    } else {
+      return const Color.fromARGB(255, 6, 20, 27);
     }
   }
 }
