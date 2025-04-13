@@ -127,7 +127,7 @@ class HomePage extends StatelessWidget {
       Get.offAllNamed('/login');
     },
     onCancelBtnTap: () {
-      // No hacer nada, simplemente cerrar el diálogo
+      Get.back();
     },
   );
 },

@@ -755,16 +755,7 @@ class EventByIdPage extends StatelessWidget {
                 
                 // Botón para mostrar todos los precios
                 SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {
-                     
-                      controller.showAllPrices.value = true;
-                    },
-                    child: Text('Ver todos los precios'),
-                  ),
-                ),
+                
               ],
             ),
           );

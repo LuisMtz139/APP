@@ -8,12 +8,12 @@ import 'package:intl/intl.dart';
 
 class EventByIdController extends GetxController {
   final EventByIdUsecase eventByIdUsecase;
-  final UserDataUsecase userDataUsecase; // Cambiado a UserDataUsecase
+  final UserDataUsecase userDataUsecase; 
   final RxBool showAllPrices = false.obs;
 
   EventByIdController({
     required this.eventByIdUsecase,
-    required this.userDataUsecase, // Cambiado el parámetro
+    required this.userDataUsecase,
   });
 
   final Rx<EventsEntity?> event = Rx<EventsEntity?>(null);
@@ -21,7 +21,6 @@ class EventByIdController extends GetxController {
   final RxBool hasError = false.obs;
   final RxString errorMessage = ''.obs;
   
-  // Variables para datos de usuario
   final RxList<UserDataEntity> userData = <UserDataEntity>[].obs;
   final RxString membresiaNombre = 'Cargando...'.obs;
   final RxBool isLoadingMembership = true.obs;
@@ -30,7 +29,6 @@ class EventByIdController extends GetxController {
   void onInit() {
     super.onInit();
     
-    // Cargamos los datos del usuario
     fetchUserData();
     
     if (Get.arguments != null && Get.arguments is Map && Get.arguments.containsKey('eventId')) {
@@ -43,16 +41,13 @@ class EventByIdController extends GetxController {
     }
   }
 
-  // Método actualizado para obtener los datos del usuario
   Future<void> fetchUserData() async {
     try {
       isLoadingMembership.value = true;
       
-      // Obtener datos del usuario
       final userDataList = await userDataUsecase.execute();
       userData.value = userDataList;
       
-      // Procesar datos para obtener la membresía
       _processUserData();
       
     } catch (e) {
@@ -63,28 +58,22 @@ class EventByIdController extends GetxController {
     }
   }
 
-  // Método actualizado para procesar los datos del usuario
   void _processUserData() {
-    // Si no hay datos de usuario, establecer valores predeterminados
     if (userData.isEmpty) {
       membresiaNombre.value = 'No disponible';
       return;
     }
 
-    // Obtener el primer usuario (asumimos que solo hay uno en la respuesta)
     final user = userData.first;
     
-    // Establecer nombre de membresía
     if (user.nombreMembresia.isNotEmpty) {
       membresiaNombre.value = user.nombreMembresia;
     } else {
       membresiaNombre.value = 'No disponible';
     }
     
-    // Aquí puedes procesar más datos del usuario si es necesario
   }
 
-  // El resto de los métodos permanecen sin cambios
   Future<void> loadEvent(String id) async {
     try {
       isLoading.value = true;
