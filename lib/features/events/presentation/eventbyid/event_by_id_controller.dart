@@ -217,6 +217,8 @@ class EventByIdController extends GetxController {
       
       isUserRegistered.value = true;
       dashboardsController.fetchEvents();
+      dashboardsController.fetchUserDebts();
+      dashboardsController.fetchUserData();
       QuickAlert.show(
         context: context,
         type: QuickAlertType.success,
