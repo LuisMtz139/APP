@@ -165,26 +165,13 @@ class EventByIdPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Título y tipo de evento
                 Text(
                   event.titulo,
                   style: MedicalTheme.headingMedium,
                 ),
-                SizedBox(height: 8),
-                Chip(
-                  label: Text(
-                    event.tipoEvento.toUpperCase(),
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  backgroundColor: gradientColors[0],
-                  padding: EdgeInsets.symmetric(horizontal: 8),
-                ),
+               
                 SizedBox(height: 24),
                 
-                // Información principal del evento
                 _buildInfoSection(
                   title: 'Duración',
                   icon: Icons.calendar_today_rounded,

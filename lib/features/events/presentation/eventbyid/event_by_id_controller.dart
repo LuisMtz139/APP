@@ -1,19 +1,19 @@
 import 'package:app_cirugia_endoscopica/features/events/domain/entities/events/events_entity.dart';
 import 'package:app_cirugia_endoscopica/features/events/domain/usecases/event_by_id_usecase.dart';
-import 'package:app_cirugia_endoscopica/features/users/domain/entities/userdebts/user_debts_entity.dart';
-import 'package:app_cirugia_endoscopica/features/users/domain/usecases/user_debts_usecase.dart';
+import 'package:app_cirugia_endoscopica/features/users/domain/entities/user_data_entity.dart';
+import 'package:app_cirugia_endoscopica/features/users/domain/usecases/user_data_usecase.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 class EventByIdController extends GetxController {
- final EventByIdUsecase eventByIdUsecase;
-  final UserDebtsUsecase userDebtsUsecase; // Nuevo caso de uso
-// Agregar en la lista de variables del controlador
-final RxBool showAllPrices = false.obs;
+  final EventByIdUsecase eventByIdUsecase;
+  final UserDataUsecase userDataUsecase; // Cambiado a UserDataUsecase
+  final RxBool showAllPrices = false.obs;
+
   EventByIdController({
     required this.eventByIdUsecase,
-    required this.userDebtsUsecase, // Agregamos el parámetro
+    required this.userDataUsecase, // Cambiado el parámetro
   });
 
   final Rx<EventsEntity?> event = Rx<EventsEntity?>(null);
@@ -21,8 +21,8 @@ final RxBool showAllPrices = false.obs;
   final RxBool hasError = false.obs;
   final RxString errorMessage = ''.obs;
   
-  // Variables para datos de membresía
-  final RxList<UserDebtsEntity> userDebts = <UserDebtsEntity>[].obs;
+  // Variables para datos de usuario
+  final RxList<UserDataEntity> userData = <UserDataEntity>[].obs;
   final RxString membresiaNombre = 'Cargando...'.obs;
   final RxBool isLoadingMembership = true.obs;
 
@@ -30,8 +30,8 @@ final RxBool showAllPrices = false.obs;
   void onInit() {
     super.onInit();
     
-    // Cargamos los datos de la membresía
-    fetchUserDebts();
+    // Cargamos los datos del usuario
+    fetchUserData();
     
     if (Get.arguments != null && Get.arguments is Map && Get.arguments.containsKey('eventId')) {
       final String eventId = Get.arguments['eventId'] as String;
@@ -41,49 +41,57 @@ final RxBool showAllPrices = false.obs;
       errorMessage.value = 'No se pudo obtener el ID del evento';
       isLoading.value = false;
     }
-  }Future<void> fetchUserDebts() async {
+  }
+
+  // Método actualizado para obtener los datos del usuario
+  Future<void> fetchUserData() async {
     try {
       isLoadingMembership.value = true;
       
-      // Obtener datos de adeudos
-      final debts = await userDebtsUsecase.execute();
-      userDebts.value = debts;
+      // Obtener datos del usuario
+      final userDataList = await userDataUsecase.execute();
+      userData.value = userDataList;
       
-      // Procesar datos para encontrar la membresía
-      _processDebtsData();
+      // Procesar datos para obtener la membresía
+      _processUserData();
       
     } catch (e) {
-      print('Error al cargar datos de membresía: ${e.toString()}');
+      print('Error al cargar datos de usuario: ${e.toString()}');
+      membresiaNombre.value = 'No disponible';
     } finally {
       isLoadingMembership.value = false;
     }
   }
- void _processDebtsData() {
-    // Si no hay adeudos, establecer valores predeterminados
-    if (userDebts.isEmpty) {
+
+  // Método actualizado para procesar los datos del usuario
+  void _processUserData() {
+    // Si no hay datos de usuario, establecer valores predeterminados
+    if (userData.isEmpty) {
       membresiaNombre.value = 'No disponible';
       return;
     }
 
-    // Filtrar adeudos por tipo membresía
-    final membresiaDebt = userDebts.firstWhereOrNull(
-      (debt) => debt.tipoAdeudo.toLowerCase() == 'membresia'
-    );
-
-    // Establecer datos de membresía
-    if (membresiaDebt != null) {
-      membresiaNombre.value = membresiaDebt.nombreMembresia ?? 'No especificada';
+    // Obtener el primer usuario (asumimos que solo hay uno en la respuesta)
+    final user = userData.first;
+    
+    // Establecer nombre de membresía
+    if (user.nombreMembresia.isNotEmpty) {
+      membresiaNombre.value = user.nombreMembresia;
     } else {
       membresiaNombre.value = 'No disponible';
     }
+    
+    // Aquí puedes procesar más datos del usuario si es necesario
   }
+
+  // El resto de los métodos permanecen sin cambios
   Future<void> loadEvent(String id) async {
     try {
       isLoading.value = true;
       hasError.value = false;
       errorMessage.value = '';
 
-      print('Cargando evento con ID: $id'); // Agregar log para depuración
+      print('Cargando evento con ID: $id');
 
       final List<EventsEntity> events = await eventByIdUsecase.execute(id);
       
@@ -95,7 +103,7 @@ final RxBool showAllPrices = false.obs;
         errorMessage.value = 'No se encontró el evento';
       }
     } catch (e) {
-      print('Error al cargar el evento: $e'); // Agregar log para depuración
+      print('Error al cargar el evento: $e');
       hasError.value = true;
       errorMessage.value = 'Error al cargar el evento: ${e.toString()}';
     } finally {
@@ -103,7 +111,6 @@ final RxBool showAllPrices = false.obs;
     }
   }
 
-  // Métodos para formatear la información del evento
   String formatDate(String dateString) {
     try {
       final DateTime date = DateTime.parse(dateString);

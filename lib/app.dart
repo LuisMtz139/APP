@@ -42,10 +42,9 @@ class App extends StatelessWidget {
         
         // Controladores que serán inicializados bajo demanda
         Get.lazyPut(() => EventsController(eventsUsecase: Get.find()), fenix: true);
-         Get.put(EventByIdController(eventByIdUsecase: usecaseConfig.eventByIdUsecase!,userDebtsUsecase: usecaseConfig.userDebtsUsecase!), permanent: true);
         // Nota: EventByIdController se registra en su propio binding userDebtsUsecase: usecaseConfig.userDebtsUsecase!,
         // cuando se navega a la ruta correspondiente
-        
+        Get.lazyPut(() => EventByIdController(eventByIdUsecase: Get.find(), userDataUsecase: Get.find()), fenix: true);
         Get.lazyPut(() => DashboardsController(
           userDebtsUsecase: Get.find(),
           userDataUsecase: Get.find(),
