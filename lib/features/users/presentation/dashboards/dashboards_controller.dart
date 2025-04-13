@@ -296,59 +296,105 @@ void _processDebtsData() {
     }
   }
 
-  void showDebtsModal() {
-    Get.dialog(
-      Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Container(
-          constraints: const BoxConstraints(maxHeight: 400, maxWidth: 300),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                "Detalle de Adeudos",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              ),
-              const SizedBox(height: 12),
-              Expanded(
-                child: Obx(() {
-                  if (userDebts.isEmpty) {
-                    return const Center(child: Text("Sin adeudos disponibles"));
-                  }
+void showDebtsModal() {
+  Get.dialog(
+    Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        constraints: const BoxConstraints(
+          maxWidth: 500,
+          maxHeight: 600, // más alto
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "Detalle de Adeudos",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: Obx(() {
+                if (userDebts.isEmpty) {
+                  return const Center(child: Text("Sin adeudos disponibles"));
+                }
 
-                  return ListView.separated(
-                    itemCount: userDebts.length,
-                    separatorBuilder: (_, __) => const Divider(),
-                    itemBuilder: (_, index) {
-                      final debt = userDebts[index];
-                      return ListTile(
-                        title: Text(debt.tipoAdeudo),
-                        subtitle: Text("Monto: \$${debt.monto}"),
-                        trailing: Text(
-                          debt.estatus,
-                          style: TextStyle(
-                            color: debt.estatus.toLowerCase() == 'pendiente'
-                                ? Colors.orange
-                                : MedicalTheme.successColor,
+                return ListView.separated(
+                  itemCount: userDebts.length,
+                  separatorBuilder: (_, __) => const Divider(height: 16),
+                  itemBuilder: (_, index) {
+                    final debt = userDebts[index];
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        color: MedicalTheme.surfaceColor,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
                           ),
-                        ),
-                      );
-                    },
-                  );
-                }),
-              ),
-              const SizedBox(height: 12),
-              ElevatedButton(
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              debt.descripcion?.isNotEmpty == true
+                                  ? debt.descripcion!
+                                  : "Sin descripción",
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            "\$${debt.monto}",
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              }),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.close_rounded),
+                label: const Text("Cerrar"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: MedicalTheme.primaryColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
                 onPressed: () => Get.back(),
-                child: const Text("Cerrar"),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Color _getColorByEstatus(String estatus) {
     switch (estatus.toLowerCase()) {
