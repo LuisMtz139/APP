@@ -121,7 +121,8 @@ Future<List<UserDebtsEntity>> userdebts(String token) async {
         // Verifica la estructura correcta de la respuesta
         if (jsonData is Map<String, dynamic> && jsonData.containsKey('data')) {
           final data = jsonData['data'];
-          
+                                    print('userdebts Respuesta exitosa $data');
+
           if (data is List) {
             // La respuesta es una lista de adeudos
             final List<UserDebtsEntity> results = [];
@@ -129,6 +130,8 @@ Future<List<UserDebtsEntity>> userdebts(String token) async {
               if (item is Map<String, dynamic>) {
                 try {
                   results.add(UserDebtsModel.fromJson(item));
+                          print('userdebts Respuesta exitosa $results');
+
                 } catch (e) {
                   print('❌ Error procesando item: $e');
                 }

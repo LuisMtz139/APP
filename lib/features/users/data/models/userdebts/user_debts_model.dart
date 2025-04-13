@@ -1,4 +1,3 @@
-
 import 'package:app_cirugia_endoscopica/features/users/domain/entities/userdebts/user_debts_entity.dart';
 
 class UserDebtsModel extends UserDebtsEntity {
@@ -7,9 +6,9 @@ class UserDebtsModel extends UserDebtsEntity {
     required int idUsuario,
     required String tipoAdeudo,
     int? fechaMembresia,
-    required String nombreMembresia,
+    String? nombreMembresia,  // Ahora es nullable
     int? membresiaId,
-    String? eventoId,
+    int? eventoId,
     required String monto,
     required String moneda,
     required String cantidadPagada,
@@ -39,24 +38,30 @@ class UserDebtsModel extends UserDebtsEntity {
         );
 
   factory UserDebtsModel.fromJson(Map<String, dynamic> json) {
-    return UserDebtsModel(
-      id: json['id'] ?? '',
-      idUsuario: json['idUsuario'] ?? 0,
-      tipoAdeudo: json['tipoAdeudo'] ?? '',
-      fechaMembresia: json['fechaMembresia'],
-      nombreMembresia: json['nombreMembresia'],
-      membresiaId: json['membresiaId'],
-      eventoId: json['eventoId'],
-      monto: json['monto'] ?? '0.00',
-      moneda: json['moneda'] ?? 'MXN',
-      cantidadPagada: json['cantidadPagada'] ?? '0',
-      descripcion: json['descripcion'] ?? '',
-      estatus: json['estatus'] ?? 'pendiente',
-      creadoEl: json['creadoEl'] ?? '',
-      actualizadoEl: json['actualizadoEl'] ?? '',
-      rfcUsuario: json['rfcUsuario'] ?? '',
-      tituloEvento: json['tituloEvento'],
-    );
+    try {
+      return UserDebtsModel(
+        id: json['id'] ?? '',
+        idUsuario: json['idUsuario'] ?? 0,
+        tipoAdeudo: json['tipoAdeudo'] ?? '',
+        fechaMembresia: json['fechaMembresia'],
+        nombreMembresia: json['nombreMembresia'], 
+        membresiaId: json['membresiaId'],
+        eventoId: json['eventoId'],
+        monto: json['monto'] ?? '0.00',
+        moneda: json['moneda'] ?? 'MXN',
+        cantidadPagada: json['cantidadPagada'] ?? '0',
+        descripcion: json['descripcion'] ?? '',
+        estatus: json['estatus'] ?? '',
+        creadoEl: json['creadoEl'] ?? '',
+        actualizadoEl: json['actualizadoEl'] ?? '',
+        rfcUsuario: json['rfcUsuario'] ?? '',
+        tituloEvento: json['tituloEvento'],
+      );
+    } catch (e) {
+      print('❌ Error procesando item: $e');
+      print('JSON que causó el error: $json');
+      rethrow;
+    }
   }
 
   factory UserDebtsModel.fromEntity(UserDebtsEntity entity) {
@@ -80,7 +85,6 @@ class UserDebtsModel extends UserDebtsEntity {
     );
   }
 
-  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,

@@ -42,9 +42,10 @@ class DashboardsController extends GetxController {
     super.onInit();
     fetchUserData();
     fetchUserDebts();
-    fetchEvents() ;
+    fetchEvents();
   }
-Future<void> fetchEvents() async {
+
+  Future<void> fetchEvents() async {
     try {
       isLoading.value = true;
       final eventsList = await _userCalendarUsecase.execute();
@@ -62,7 +63,9 @@ Future<void> fetchEvents() async {
       isLoading.value = false;
     
     }
-  }// Método para obtener el icono basado en el tipo de evento
+  }
+
+  // Método para obtener el icono basado en el tipo de evento
   IconData getEventIcon(String tipoEvento) {
     final tipo = tipoEvento.toLowerCase().trim();
     if (tipo == 'congreso') {
@@ -75,9 +78,11 @@ Future<void> fetchEvents() async {
       return Icons.event_rounded;
     }
   }
-   List<EventsEntity> get featuredEvents {
-  return events; // Sin filtro, muestra todos los eventos
-}
+
+  List<EventsEntity> get featuredEvents {
+    return events; // Sin filtro, muestra todos los eventos
+  }
+
   // Método para obtener los colores del gradiente basado en el tipo de evento
   List<Color> getEventGradient(String tipoEvento) {
     final tipo = tipoEvento.toLowerCase().trim();
@@ -91,6 +96,7 @@ Future<void> fetchEvents() async {
       return [Color(0xFFFF8C00), Color(0xFFFFD700)];
     }
   }
+
   Future<void> fetchUserData() async {
     try {
       final userDataList = await _userDataUsecase.execute();
@@ -98,8 +104,8 @@ Future<void> fetchEvents() async {
       if (userDataList.isNotEmpty) {
         userData.value = userDataList.first;
         userName.value = "${userData.value!.nombre} ${userData.value!.apellidoPaterno}";
-        membresiaEstatus.value = userData.value!.estatus ?? 'No disponible';
-
+        
+        
         final createdDate = DateTime.tryParse(userData.value!.creadoEl ?? '');
         if (createdDate != null) {
           final startYear = createdDate.year;
@@ -142,12 +148,15 @@ Future<void> fetchEvents() async {
       return;
     }
 
+    // Cambio aquí: Obtener el estatus de membresía desde userDebts
     final membresiaDebt = userDebts.firstWhereOrNull(
       (debt) => debt.tipoAdeudo.toLowerCase() == 'membresia',
     );
 
     if (membresiaDebt != null) {
       membresiaNombre.value = membresiaDebt.nombreMembresia ?? 'No especificada';
+      // Usar el estatus del adeudo de membresía
+      membresiaEstatus.value = membresiaDebt.estatus ?? 'No disponible';
     }
 
     final pendingDebts = userDebts.where(
@@ -274,7 +283,8 @@ Future<void> fetchEvents() async {
       ),
     );
   }
- String formatDate(String dateString) {
+
+  String formatDate(String dateString) {
     try {
       final date = DateTime.parse(dateString);
       final months = [
@@ -287,6 +297,7 @@ Future<void> fetchEvents() async {
       return dateString;
     }
   }
+
   void showDebtsModal() {
     Get.dialog(
       Dialog(
