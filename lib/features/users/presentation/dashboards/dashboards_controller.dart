@@ -105,6 +105,8 @@ class DashboardsController extends GetxController {
         userData.value = userDataList.first;
         userName.value = "${userData.value!.nombre} ${userData.value!.apellidoPaterno}";
         
+        // Obtener nombre de membresía desde userData
+        membresiaNombre.value = userData.value!.nombreMembresia ?? 'No especificada';
         
         final createdDate = DateTime.tryParse(userData.value!.creadoEl ?? '');
         if (createdDate != null) {
@@ -116,10 +118,12 @@ class DashboardsController extends GetxController {
         }
       } else {
         userName.value = "Usuario";
+        membresiaNombre.value = "No disponible";
       }
     } catch (e) {
       print('Error en fetchUserData: ${e.toString()}');
       userName.value = "Usuario";
+      membresiaNombre.value = "No disponible";
     }
   }
 
@@ -140,23 +144,23 @@ class DashboardsController extends GetxController {
 
   void _processDebtsData() {
     if (userDebts.isEmpty) {
-      membresiaNombre.value = 'No disponible';
-      creadoEl.value = 'No disponible';
+      // Solo establecemos valores predeterminados para los datos que vienen de userDebts
       membresiaEstatus.value = 'No disponible';
       totalAdeudos.value = '0';
       montoTotalPendiente.value = 0.0;
       return;
     }
 
-    // Cambio aquí: Obtener el estatus de membresía desde userDebts
+    // Obtener el estatus de membresía desde userDebts
     final membresiaDebt = userDebts.firstWhereOrNull(
       (debt) => debt.tipoAdeudo.toLowerCase() == 'membresia',
     );
 
     if (membresiaDebt != null) {
-      membresiaNombre.value = membresiaDebt.nombreMembresia ?? 'No especificada';
-      // Usar el estatus del adeudo de membresía
+      // Solo actualizamos el estatus desde userDebts, no el nombre
       membresiaEstatus.value = membresiaDebt.estatus ?? 'No disponible';
+    } else {
+      membresiaEstatus.value = 'No disponible';
     }
 
     final pendingDebts = userDebts.where(
