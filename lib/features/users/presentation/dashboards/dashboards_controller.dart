@@ -622,29 +622,13 @@ Widget _buildDebtCard(UserDebtsEntity debt) {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildDetailRow('Fecha:', formattedDate),
                         const SizedBox(height: 4),
                         _buildDetailRow('Total:', '\$${debt.monto}'),
                       ],
                     ),
                   ),
                   
-                  // Segunda columna
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildDetailRow('Pagado:', '\$${debt.cantidadPagada}'),
-                        const SizedBox(height: 4),
-                        _buildDetailRow(
-                          'Pendiente:', 
-                          '\$${montoPendiente.toStringAsFixed(2)}',
-                          valueColor: isPending ? Colors.orange : MedicalTheme.successColor,
-                          isBold: true,
-                        ),
-                      ],
-                    ),
-                  ),
+                  
                 ],
               ),
             ],
