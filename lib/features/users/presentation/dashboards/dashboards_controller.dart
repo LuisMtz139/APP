@@ -141,40 +141,34 @@ class DashboardsController extends GetxController {
       isLoading.value = false;
     }
   }
-
-  void _processDebtsData() {
-    if (userDebts.isEmpty) {
-      // Solo establecemos valores predeterminados para los datos que vienen de userDebts
-      membresiaEstatus.value = 'No disponible';
-      totalAdeudos.value = '0';
-      montoTotalPendiente.value = 0.0;
-      return;
-    }
-
-    // Obtener el estatus de membresía desde userDebts
-    final membresiaDebt = userDebts.firstWhereOrNull(
-      (debt) => debt.tipoAdeudo.toLowerCase() == 'membresia',
-    );
-
-    if (membresiaDebt != null) {
-      // Solo actualizamos el estatus desde userDebts, no el nombre
-      membresiaEstatus.value = membresiaDebt.estatus ?? 'No disponible';
-    } else {
-      membresiaEstatus.value = 'No disponible';
-    }
-
-    final pendingDebts = userDebts.where(
-      (debt) => debt.estatus.toLowerCase() == 'pendiente',
-    ).toList();
-
-    totalAdeudos.value = pendingDebts.length.toString();
-
-    montoTotalPendiente.value = pendingDebts.fold(0.0, (prev, debt) {
-      return prev +
-          (double.tryParse(debt.monto) ?? 0.0) -
-          (double.tryParse(debt.cantidadPagada) ?? 0.0);
-    });
+void _processDebtsData() {
+  if (userDebts.isEmpty) {
+    // Solo establecemos valores predeterminados para los datos que vienen de userDebts
+    membresiaEstatus.value = 'No disponible';
+    totalAdeudos.value = '0';
+    montoTotalPendiente.value = 0.0;
+    return;
   }
+
+  // Mostrar directamente el estatus del primer registro
+  if (userDebts.isNotEmpty) {
+    membresiaEstatus.value = userDebts.first.estatus;
+  } else {
+    membresiaEstatus.value = 'No disponible';
+  }
+
+  final pendingDebts = userDebts.where(
+    (debt) => debt.estatus.toLowerCase() == 'pendiente',
+  ).toList();
+
+  totalAdeudos.value = pendingDebts.length.toString();
+
+  montoTotalPendiente.value = pendingDebts.fold(0.0, (prev, debt) {
+    return prev +
+        (double.tryParse(debt.monto) ?? 0.0) -
+        (double.tryParse(debt.cantidadPagada) ?? 0.0);
+  });
+}
 
   List<Widget> buildStatusCards() {
     return [
