@@ -297,102 +297,384 @@ void _processDebtsData() {
   }
 
 void showDebtsModal() {
-  Get.dialog(
-    Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        constraints: const BoxConstraints(
-          maxWidth: 500,
-          maxHeight: 600, // más alto
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              "Detalle de Adeudos",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: Obx(() {
-                if (userDebts.isEmpty) {
-                  return const Center(child: Text("Sin adeudos disponibles"));
-                }
+  final screenHeight = MediaQuery.of(Get.context!).size.height;
+  final screenWidth = MediaQuery.of(Get.context!).size.width;
 
-                return ListView.separated(
-                  itemCount: userDebts.length,
-                  separatorBuilder: (_, __) => const Divider(height: 16),
-                  itemBuilder: (_, index) {
-                    final debt = userDebts[index];
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 12,
-                        horizontal: 14,
-                      ),
-                      decoration: BoxDecoration(
-                        color: MedicalTheme.surfaceColor,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 6,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              debt.descripcion?.isNotEmpty == true
-                                  ? debt.descripcion!
-                                  : "Sin descripción",
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
+  Navigator.of(Get.context!).push(
+    PageRouteBuilder(
+      opaque: false,
+      pageBuilder: (BuildContext context, _, __) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return GestureDetector(
+              onTap: () {
+                Navigator.pop(context);
+              },
+              child: Material(
+                color: Colors.black54,
+                child: Stack(
+                  children: [
+                    TweenAnimationBuilder<double>(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOut,
+                      tween: Tween<double>(begin: screenHeight, end: 0),
+                      builder: (_, value, child) {
+                        return Transform.translate(
+                          offset: Offset(0, value),
+                          child: child,
+                        );
+                      },
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: GestureDetector(
+                          onTap: () {}, 
+                          child: Container(
+                            width: screenWidth,
+                            constraints: BoxConstraints(
+                              maxHeight: screenHeight * 0.9,
+                            ),
+                            decoration: BoxDecoration(
+                              color: MedicalTheme.cardColor,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(20),
+                                topRight: Radius.circular(20),
                               ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: MedicalTheme.dividerColor.withOpacity(0.1),
+                                  spreadRadius: 1,
+                                  blurRadius: 10,
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Línea de arrastre
+                                Container(
+                                  margin: const EdgeInsets.only(top: 12, bottom: 8),
+                                  width: 40,
+                                  height: 4,
+                                  decoration: BoxDecoration(
+                                    color: MedicalTheme.dividerColor,
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
+                                
+                                // Título
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 16, bottom: 24),
+                                  child: Text(
+                                    'Detalle de Adeudos',
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: MedicalTheme.textPrimaryColor,
+                                    ),
+                                  ),
+                                ),
+                                
+                                // Lista de adeudos
+                                Expanded(
+                                  child: Obx(() {
+                                    if (isLoading.value) {
+                                      return Center(
+                                        child: CircularProgressIndicator(
+                                          color: MedicalTheme.primaryColor,
+                                        ),
+                                      );
+                                    }
+                                    
+                                    if (userDebts.isEmpty) {
+                                      return _buildEmptyDebtsView();
+                                    }
+
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                                      child: ListView.separated(
+                                        physics: const BouncingScrollPhysics(),
+                                        itemCount: userDebts.length,
+                                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                                        itemBuilder: (_, index) => _buildDebtCard(userDebts[index]),
+                                      ),
+                                    );
+                                  }),
+                                ),
+                                
+                                // Acciones y resumen
+                                Padding(
+                                  padding: const EdgeInsets.all(24),
+                                  child: Column(
+                                    children: [
+                                      // Resumen
+                                      Obx(() => Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            'Total Pendiente:',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                              color: MedicalTheme.textSecondaryColor,
+                                            ),
+                                          ),
+                                          Text(
+                                            '\$${montoTotalPendiente.value.toStringAsFixed(2)}',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: montoTotalPendiente.value > 0 
+                                                ? Colors.orange
+                                                : MedicalTheme.successColor,
+                                            ),
+                                          ),
+                                        ],
+                                      )),
+                                      
+                                      const SizedBox(height: 20),
+                                      
+                                      // Botón para cerrar
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton.icon(
+                                          icon: const Icon(Icons.close_rounded),
+                                          label: const Text("Cerrar"),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: MedicalTheme.primaryColor,
+                                            foregroundColor: Colors.white,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(14),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(vertical: 14),
+                                          ),
+                                          onPressed: () => Navigator.pop(context),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          Text(
-                            "\$${debt.monto}",
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    );
-                  },
-                );
-              }),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.close_rounded),
-                label: const Text("Cerrar"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: MedicalTheme.primaryColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                  ],
                 ),
-                onPressed: () => Get.back(),
               ),
-            ),
-          ],
+            );
+          },
+        );
+      },
+      transitionsBuilder: (_, animation, __, child) {
+        return FadeTransition(
+          opacity: animation,
+          child: child,
+        );
+      },
+    ),
+  );
+}
+
+Widget _buildEmptyDebtsView() {
+  return Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Icon(
+        Icons.account_balance_wallet_outlined,
+        size: 64,
+        color: Colors.grey.shade400,
+      ),
+      const SizedBox(height: 16),
+      Text(
+        "Sin adeudos disponibles",
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.grey.shade600,
         ),
       ),
+      const SizedBox(height: 8),
+      Text(
+        "¡Estás al día con tus pagos!",
+        style: TextStyle(
+          fontSize: 14,
+          color: Colors.grey.shade500,
+        ),
+      ),
+    ],
+  );
+}
+
+Widget _buildDebtCard(UserDebtsEntity debt) {
+  final isPending = debt.estatus.toLowerCase() == 'pendiente';
+  final statusColor = isPending ? Colors.orange : MedicalTheme.successColor;
+  final formattedDate = formatDate(debt.creadoEl);
+  
+  final montoTotal = double.tryParse(debt.monto) ?? 0.0;
+  final montoPagado = double.tryParse(debt.cantidadPagada) ?? 0.0;
+  final montoPendiente = montoTotal - montoPagado;
+  
+  return Container(
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.1),
+          spreadRadius: 1,
+          blurRadius: 8,
+          offset: const Offset(0, 3),
+        ),
+      ],
     ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Encabezado con Tipo y Estatus
+        Container(
+          decoration: BoxDecoration(
+            color: MedicalTheme.primaryColor.withOpacity(0.05),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    debt.tipoAdeudo.toLowerCase() == 'evento' 
+                        ? Icons.event_available
+                        : Icons.card_membership_rounded,
+                    color: MedicalTheme.primaryColor,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    debt.tipoAdeudo,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: MedicalTheme.primaryColor,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: statusColor,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      debt.estatus,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: statusColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        
+        // Contenido
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Descripción
+              Text(
+                debt.descripcion,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black87,
+                ),
+              ),
+              
+              const SizedBox(height: 12),
+              
+              // Detalles en dos columnas
+              Row(
+                children: [
+                  // Primera columna
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildDetailRow('Fecha:', formattedDate),
+                        const SizedBox(height: 4),
+                        _buildDetailRow('Total:', '\$${debt.monto}'),
+                      ],
+                    ),
+                  ),
+                  
+                  // Segunda columna
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildDetailRow('Pagado:', '\$${debt.cantidadPagada}'),
+                        const SizedBox(height: 4),
+                        _buildDetailRow(
+                          'Pendiente:', 
+                          '\$${montoPendiente.toStringAsFixed(2)}',
+                          valueColor: isPending ? Colors.orange : MedicalTheme.successColor,
+                          isBold: true,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _buildDetailRow(String label, String value, {Color? valueColor, bool isBold = false}) {
+  return Row(
+    children: [
+      Text(
+        label,
+        style: TextStyle(
+          fontSize: 13,
+          color: Colors.grey.shade600,
+        ),
+      ),
+      const SizedBox(width: 4),
+      Text(
+        value,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+          color: valueColor ?? Colors.black87,
+        ),
+      ),
+    ],
   );
 }
 
