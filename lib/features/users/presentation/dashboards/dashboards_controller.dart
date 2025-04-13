@@ -1,3 +1,5 @@
+import 'package:app_cirugia_endoscopica/features/events/domain/entities/events/events_entity.dart';
+import 'package:app_cirugia_endoscopica/features/events/domain/usecases/user_calendar_usecase.dart';
 import 'package:app_cirugia_endoscopica/features/users/domain/entities/user_data_entity.dart';
 import 'package:app_cirugia_endoscopica/features/users/domain/usecases/user_data_usecase.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +11,8 @@ import 'package:app_cirugia_endoscopica/features/users/domain/usecases/user_debt
 class DashboardsController extends GetxController {
   final UserDebtsUsecase _userDebtsUsecase;
   final UserDataUsecase _userDataUsecase;
+  final UserCalendarUsecase _userCalendarUsecase;
+  final RxList<EventsEntity> filteredEvents = <EventsEntity>[].obs;
 
   final RxList<UserDebtsEntity> userDebts = <UserDebtsEntity>[].obs;
   final RxBool isLoading = true.obs;
@@ -22,20 +26,71 @@ class DashboardsController extends GetxController {
   final RxString membresiaEstatus = 'Cargando...'.obs;
   final RxString totalAdeudos = '0'.obs;
   final RxDouble montoTotalPendiente = 0.0.obs;
+  final RxList<EventsEntity> events = <EventsEntity>[].obs;
 
   DashboardsController({
     required UserDebtsUsecase userDebtsUsecase,
     required UserDataUsecase userDataUsecase,
-  })  : _userDebtsUsecase = userDebtsUsecase,
+    required UserCalendarUsecase userCalendarUsecase,
+  })  : _userCalendarUsecase = userCalendarUsecase,
+        _userDebtsUsecase = userDebtsUsecase,
         _userDataUsecase = userDataUsecase;
+  
 
   @override
   void onInit() {
     super.onInit();
     fetchUserData();
     fetchUserDebts();
+    fetchEvents() ;
   }
-
+Future<void> fetchEvents() async {
+    try {
+      isLoading.value = true;
+      final eventsList = await _userCalendarUsecase.execute();
+      
+      // Imprime para depuración
+      print('Eventos obtenidos: ${eventsList.length}');
+      for (var event in eventsList) {
+        print('Evento: ${event.id} - ${event.titulo} - ${event.tipoEvento}');
+      }
+      
+      events.assignAll(eventsList);
+      isLoading.value = false;
+    } catch (e) {
+      print('Error al cargar eventos: $e');
+      isLoading.value = false;
+    
+    }
+  }// Método para obtener el icono basado en el tipo de evento
+  IconData getEventIcon(String tipoEvento) {
+    final tipo = tipoEvento.toLowerCase().trim();
+    if (tipo == 'congreso') {
+      return Icons.people_rounded;
+    } else if (tipo == 'curso') {
+      return Icons.school_rounded;
+    } else if (tipo == 'seminario') {
+      return Icons.medical_information_rounded;
+    } else {
+      return Icons.event_rounded;
+    }
+  }
+   List<EventsEntity> get featuredEvents {
+  return events; // Sin filtro, muestra todos los eventos
+}
+  // Método para obtener los colores del gradiente basado en el tipo de evento
+  List<Color> getEventGradient(String tipoEvento) {
+    final tipo = tipoEvento.toLowerCase().trim();
+    if (tipo == 'congreso') {
+      return [Color(0xFF8A2BE2), Color(0xFFDA70D6)];
+    } else if (tipo == 'curso') {
+      return [Color(0xFF2E8B57), Color(0xFF3CB371)];
+    } else if (tipo == 'seminario') {
+      return [Color(0xFF0099cc), Color(0xFF00ccff)];
+    } else {
+      return [Color(0xFFFF8C00), Color(0xFFFFD700)];
+    }
+  }
   Future<void> fetchUserData() async {
     try {
       final userDataList = await _userDataUsecase.execute();
@@ -219,7 +274,19 @@ class DashboardsController extends GetxController {
       ),
     );
   }
-
+ String formatDate(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      final months = [
+        '', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+        'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
+      ];
+      return "${date.day} ${months[date.month]}, ${date.year}";
+    } catch (e) {
+      print('Error al formatear fecha: $dateString');
+      return dateString;
+    }
+  }
   void showDebtsModal() {
     Get.dialog(
       Dialog(

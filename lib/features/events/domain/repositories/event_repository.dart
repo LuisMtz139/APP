@@ -5,4 +5,5 @@ abstract class EventRepository {
   
   Future<List<EventsEntity>> events();
    Future<List<EventsEntity>> eventByid(String id) ;
+   Future<List<EventsEntity>> userCalendar();
 }

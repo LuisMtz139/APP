@@ -111,4 +111,46 @@ class EventDataSourcesImp {
       return 'Se ha producido un error inesperado. Por favor, inténtalo de nuevo más tarde.';
     }
   }
+  Future<List<EventsEntity>> userCalendar(String token, ) async {
+     try {
+      final response = await http.get(
+        Uri.parse('$defaultApiServer/user-calendar'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(utf8.decode(response.bodyBytes));
+        
+        if (jsonData is Map<String, dynamic> && jsonData.containsKey('data')) {
+          final eventsList = jsonData['data'] as List<dynamic>;
+          
+          return eventsList
+            .map((item) {
+              try {
+                return EventsModel.fromJson(item);
+              } catch (e) {
+                print('❌ Error procesando userCalendar: $e');
+                return null;
+              }
+            })
+            .whereType<EventsEntity>()
+            .toList();
+        }
+        
+        return [];
+      } else {
+        final apiException = ApiExceptionCustom(response: response);
+        apiException.validateMesage();
+        throw Exception(apiException.message);
+      }
+    } catch (e) {
+      if (e is SocketException || e is http.ClientException || e is TimeoutException) {
+        throw Exception(convertMessageException(error: e));
+      }
+      throw Exception(e.toString());
+    }
+  }
 }

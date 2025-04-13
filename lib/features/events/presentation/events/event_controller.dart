@@ -40,13 +40,7 @@ class EventsController extends GetxController {
     } catch (e) {
       print('Error al cargar eventos: $e');
       isLoading.value = false;
-      Get.snackbar(
-        'Error',
-        'No se pudieron cargar los eventos: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+     
     }
   }
   

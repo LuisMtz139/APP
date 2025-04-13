@@ -34,6 +34,15 @@ class EventRepositoryImp implements EventRepository {
     return await userDataSources.eventByid(token, id);
   }
   
+  @override
+  Future<List<EventsEntity>> userCalendar()  async {
+    final token = await authService.getToken();
+    if (token == null) {
+      throw Exception('No hay sesión activa. El usuario debe iniciar sesión.');
+    }
+    return await userDataSources.userCalendar(token);
+  }
+  
  
   
 }
