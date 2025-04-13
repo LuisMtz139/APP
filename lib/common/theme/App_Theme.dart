@@ -273,7 +273,7 @@ class MedicalTheme {
     required String text,
     required VoidCallback onPressed,
     bool isFullWidth = true,
-    double? height,
+    double? height, 
   }) {
     return SizedBox(
       width: isFullWidth ? double.infinity : null,

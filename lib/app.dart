@@ -34,6 +34,7 @@ class App extends StatelessWidget {
         Get.put(usecaseConfig.eventByIdUsecase!, permanent: true);
         Get.put(usecaseConfig.userDebtsUsecase!, permanent: true);
         Get.put(usecaseConfig.userCalendarUsecase!, permanent: true);
+        Get.put(usecaseConfig.registerEventUsecase!, permanent: true);
         // Controladores siempre necesarios
         Get.put(SplashScreenController(
           clientDataUsecase: Get.find(),
@@ -44,7 +45,7 @@ class App extends StatelessWidget {
         Get.lazyPut(() => EventsController(eventsUsecase: Get.find()), fenix: true);
         // Nota: EventByIdController se registra en su propio binding userDebtsUsecase: usecaseConfig.userDebtsUsecase!,
         // cuando se navega a la ruta correspondiente
-        Get.lazyPut(() => EventByIdController(eventByIdUsecase: Get.find(), userDataUsecase: Get.find()), fenix: true);
+        Get.lazyPut(() => EventByIdController(eventByIdUsecase: Get.find(), userDataUsecase: Get.find(), registerEventUsecase: Get.find()), fenix: true);
         Get.lazyPut(() => DashboardsController(
           userDebtsUsecase: Get.find(),
           userDataUsecase: Get.find(), userCalendarUsecase: Get.find(),

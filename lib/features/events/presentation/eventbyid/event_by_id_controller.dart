@@ -1,20 +1,28 @@
 import 'package:app_cirugia_endoscopica/features/events/domain/entities/events/events_entity.dart';
 import 'package:app_cirugia_endoscopica/features/events/domain/usecases/event_by_id_usecase.dart';
+import 'package:app_cirugia_endoscopica/features/events/domain/usecases/register_event_usecase.dart';
 import 'package:app_cirugia_endoscopica/features/users/domain/entities/user_data_entity.dart';
 import 'package:app_cirugia_endoscopica/features/users/domain/usecases/user_data_usecase.dart';
+import 'package:app_cirugia_endoscopica/features/users/presentation/dashboards/dashboards_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:quickalert/quickalert.dart';
 
 class EventByIdController extends GetxController {
   final EventByIdUsecase eventByIdUsecase;
   final UserDataUsecase userDataUsecase; 
   final RxBool showAllPrices = false.obs;
-
+  final RegisterEventUsecase registerEventUsecase;
+  final RxBool isRegistering = false.obs;
   EventByIdController({
     required this.eventByIdUsecase,
     required this.userDataUsecase,
+        required this.registerEventUsecase,
+
   });
+  final RxBool isUserRegistered = false.obs;
+    final DashboardsController dashboardsController = Get.find<DashboardsController>();
 
   final Rx<EventsEntity?> event = Rx<EventsEntity?>(null);
   final RxBool isLoading = true.obs;
@@ -199,5 +207,48 @@ class EventByIdController extends GetxController {
     final int available = total - registered;
     
     return '$available / $total ';
+  }  Future<void> registerToEvent(BuildContext context) async {
+    if (event.value == null) return;
+    
+    try {
+      isRegistering.value = true;
+      
+      await registerEventUsecase.execute(event.value!.id.toString());
+      
+      isUserRegistered.value = true;
+      dashboardsController.fetchEvents();
+      QuickAlert.show(
+        context: context,
+        type: QuickAlertType.success,
+        title: '¡Inscripción exitosa!',
+        text: 'Te has inscrito correctamente al evento "${event.value!.titulo}"',
+        confirmBtnText: 'Aceptar',
+        confirmBtnColor: Colors.green,
+      );
+      
+      await loadEvent(event.value!.id.toString());
+      
+    } catch (e) {
+      print('Error al registrarse al evento: $e');
+      
+      QuickAlert.show(
+        context: context,
+        type: QuickAlertType.error,
+        title: 'Error',
+        text: 'No se pudo completar la inscripción: ${e.toString()}',
+        confirmBtnText: 'Entendido',
+        confirmBtnColor: Colors.red,
+      );
+    } finally {
+      isRegistering.value = false;
+    }
   }
+void setUserRegistrationStatus(bool status) {
+    isUserRegistered.value = status;
+  }
+  
+  bool isUserAlreadyRegistered() {
+    return isUserRegistered.value;
+  }
+
 }

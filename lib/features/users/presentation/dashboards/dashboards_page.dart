@@ -2,6 +2,7 @@ import 'package:app_cirugia_endoscopica/common/settings/routes_names.dart';
 import 'package:app_cirugia_endoscopica/common/theme/App_Theme.dart';
 import 'package:app_cirugia_endoscopica/features/events/domain/entities/events/events_entity.dart';
 import 'package:app_cirugia_endoscopica/features/users/presentation/dashboards/dashboards_controller.dart';
+import 'package:app_cirugia_endoscopica/features/users/presentation/dashboards/widget/events_skeleton_loading.dart';
 import 'package:app_cirugia_endoscopica/features/users/presentation/dashboards/widget/statuscards_skeleton_loading.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -129,11 +130,10 @@ Widget _buildStatusCardsSection() {
     ],
   );
 }
-// Añade este método a la clase _DashboardScreenState
 Widget _buildUpcomingEventsSection() {
   return Obx(() {
     if (controller.isLoading.value) {
-      return Center(child: CircularProgressIndicator());
+      return EventsSkeletonLoading(); // Usar el nuevo componente de carga
     }
     
     return Column(
@@ -163,9 +163,22 @@ Widget _buildUpcomingEventsSection() {
         // Lista de eventos destacados
         if (controller.featuredEvents.isEmpty)
           Center(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Text('No hay eventos destacados disponibles'),
+            child: Column(
+              children: [
+                SizedBox(height: 20),
+                Icon(
+                  Icons.event_busy,
+                  size: 60,
+                  color: Colors.grey[400],
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'No hay eventos destacados disponibles',
+                  style: MedicalTheme.subtitleMedium.copyWith(
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
             ),
           )
         else
@@ -177,13 +190,17 @@ Widget _buildUpcomingEventsSection() {
     );
   });
 }
-
-// También necesitas este método en _DashboardScreenState
 Widget _buildEventCard(EventsEntity event) {
   return GestureDetector(
     onTap: () {
       print('Navegando al evento con ID: ${event.id}');
-      Get.toNamed(RoutesNames.eventbyid, arguments: {'eventId': event.id.toString()});
+      Get.toNamed(
+        RoutesNames.eventbyid, 
+        arguments: {
+          'eventId': event.id.toString(),
+          'isRegistered': true, 
+        }
+      );
     },
     child: Container(
       width: double.infinity,
@@ -709,78 +726,6 @@ class _SliverStatusCardDelegate extends SliverPersistentHeaderDelegate {
       ),
     );
   }
-  Widget _buildUpcomingEventsSection() {
-    return   Obx(() {
-          if (controller.isLoading.value) {
-            return Center(child: CircularProgressIndicator());
-          }
-          
-          return Container(
-            padding: const EdgeInsets.only(top: 20),
-            decoration: BoxDecoration(
-              color: MedicalTheme.surfaceColor.withOpacity(0.5),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(30),
-                topRight: Radius.circular(30),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
-                  blurRadius: 10,
-                  offset: Offset(0, -2),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(30),
-                topRight: Radius.circular(30),
-              ),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                physics: BouncingScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'próximos eventos',
-                            style: MedicalTheme.headingSmall,
-                          ),
-                          
-                        ],
-                      ),
-                    ),
-                    
-                    // Lista de eventos destacados
-                    if (controller.featuredEvents.isEmpty)
-                      Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Text('No hay eventos destacados disponibles'),
-                        ),
-                      )
-                    else
-                      ...controller.featuredEvents.map((event) => Padding(
-                        padding: const EdgeInsets.only(bottom: 16.0),
-                        child: _buildEventCard(event),
-                      )).toList(),
-                    
-                    const SizedBox(height: 30),
-
-                   
-                  ],
-                ),
-              ),
-            ),
-          );
-        });
-  }
-
   Widget _buildEventCard(EventsEntity event) {
     return GestureDetector(
       onTap: () {

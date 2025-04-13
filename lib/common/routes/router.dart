@@ -20,19 +20,20 @@ class AppPages {
       name: RoutesNames.loginPage,
       page: () => LoginPage(),
     ),
-    GetPage(
-      name: RoutesNames.eventbyid,
-      page: () {
-        // Obtiene el ID desde los argumentos de forma segura
-        final Map<String, dynamic> args = Get.arguments as Map<String, dynamic>;
-        final String eventId = args['eventId'] as String;
-        // Crea la página pasando el ID directamente
-        return EventByIdPage(eventId: eventId);
-      },
-      transition: Transition.rightToLeft,
-      
-      transitionDuration: Duration(milliseconds: 300),
-    ),
+   GetPage(
+  name: RoutesNames.eventbyid,
+  page: () {
+    final Map<String, dynamic> args = Get.arguments as Map<String, dynamic>;
+    final String eventId = args['eventId'] as String;
+    final bool isRegistered = args['isRegistered'] as bool? ?? false;
+    return EventByIdPage(
+      eventId: eventId,
+      isAlreadyRegistered: isRegistered,
+    );
+  },
+  transition: Transition.rightToLeft,
+  transitionDuration: Duration(milliseconds: 300),
+),
     
   ];
 

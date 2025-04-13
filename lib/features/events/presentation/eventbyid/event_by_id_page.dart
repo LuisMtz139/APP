@@ -1,20 +1,27 @@
 import 'package:app_cirugia_endoscopica/common/theme/App_Theme.dart';
 import 'package:app_cirugia_endoscopica/features/events/presentation/eventbyid/event_by_id_controller.dart';
 import 'package:app_cirugia_endoscopica/features/events/presentation/eventbyid/widget/event_skeleton_loading.dart';
+import 'package:app_cirugia_endoscopica/features/users/presentation/dashboards/dashboards_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class EventByIdPage extends StatelessWidget {
   final String eventId;
-  
-  EventByIdPage({Key? key, required this.eventId}) : super(key: key);
+    final bool isAlreadyRegistered; 
+
+  EventByIdPage({
+    Key? key, 
+    required this.eventId,
+    this.isAlreadyRegistered = false, 
+  }) : super(key: key);
   
   final EventByIdController controller = Get.find<EventByIdController>();
-  
+
   @override
   Widget build(BuildContext context) {
-    controller.loadEvent(eventId);
-    
+     controller.loadEvent(eventId);
+  controller.setUserRegistrationStatus(isAlreadyRegistered);
+  
     return Scaffold(
       backgroundColor: MedicalTheme.backgroundColor,
       appBar: PreferredSize(
@@ -113,12 +120,13 @@ class EventByIdPage extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: Obx(() {
-        if (controller.isLoading.value || controller.hasError.value || controller.event.value == null) {
-          return SizedBox.shrink();
-        }
-        
-        return Container(
+     bottomNavigationBar: Obx(() {
+      if (controller.isLoading.value || controller.hasError.value || controller.event.value == null) {
+        return SizedBox.shrink();
+      }
+      
+      return SafeArea(
+        child: Container(
           padding: EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -133,18 +141,46 @@ class EventByIdPage extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
-                child: MedicalTheme.createPrimaryButton(
-                  text: 'Inscribirme ahora',
-                  onPressed: () {
-                    // Funcionalidad para inscripción
-                  },
-                  height: 50,
-                ),
+                child: Obx(() => controller.isUserRegistered.value
+                  ? Container(
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.check_circle,
+                            color: Colors.green,
+                            size: 20,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            'Ya estás inscrito',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : MedicalTheme.createPrimaryButton(
+                      text: controller.isRegistering.value ? 'Inscribiendo...' : 'Inscribirme ahora',
+                      onPressed: controller.isRegistering.value
+                          ? () {}
+                          : () => controller.registerToEvent(context),
+                      height: 50,
+                    )),
               ),
             ],
           ),
-        );
-      }),
+        ),
+      );
+    }),
     );
   }
 

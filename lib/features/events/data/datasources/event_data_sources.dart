@@ -11,6 +11,34 @@ import 'package:http/http.dart' as http;
 class EventDataSourcesImp {
   String defaultApiServer = AppConstants.serverBase;
 
+@override
+Future<void> registerevent(String id,String token) async {
+
+ try {
+      final response = await http.post(
+        Uri.parse('$defaultApiServer/events/$id'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      
+      );
+      
+      
+      if (response.statusCode == 201) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+      } else {
+        final apiException = ApiExceptionCustom(response: response);
+        apiException.validateMesage();
+        throw Exception(apiException.message);
+      }
+    } catch (e) {
+      if (e is SocketException || e is http.ClientException || e is TimeoutException) {
+        throw Exception(convertMessageException(error: e));
+      }
+      print('Error detallado: $e');
+      throw Exception('$e');
+    }  }
   @override
   Future<List<EventsEntity>> eventByid(String token, String id) async {
     try {
@@ -153,4 +181,5 @@ class EventDataSourcesImp {
       throw Exception(e.toString());
     }
   }
+
 }
