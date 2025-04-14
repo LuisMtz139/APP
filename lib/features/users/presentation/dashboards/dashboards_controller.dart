@@ -142,7 +142,6 @@ Future<void> fetchUserData() async {
   }
 void _processDebtsData() {
   if (userDebts.isEmpty) {
-    // Solo establecemos valores predeterminados para los datos que vienen de userDebts
     membresiaEstatus.value = 'No disponible';
     totalAdeudos.value = '0';
     montoTotalPendiente.value = 0.0;
@@ -155,12 +154,17 @@ void _processDebtsData() {
 
   totalAdeudos.value = pendingDebts.length.toString();
 
+  const tasaUSD = 21.0;
+
   montoTotalPendiente.value = pendingDebts.fold(0.0, (prev, debt) {
-    return prev +
-        (double.tryParse(debt.monto) ?? 0.0) -
-        (double.tryParse(debt.cantidadPagada) ?? 0.0);
+    final monto = double.tryParse(debt.monto) ?? 0.0;
+    final pagado = double.tryParse(debt.cantidadPagada) ?? 0.0;
+    final restante = monto - pagado;
+    final convertido = (debt.moneda?.toUpperCase() == 'USD') ? restante * tasaUSD : restante;
+    return prev + convertido;
   });
 }
+
 
   List<Widget> buildStatusCards() {
     return [
