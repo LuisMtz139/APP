@@ -506,11 +506,17 @@ Widget _buildDebtCard(UserDebtsEntity debt) {
   final isPending = debt.estatus.toLowerCase() == 'pendiente';
   final statusColor = isPending ? Colors.orange : MedicalTheme.successColor;
   final formattedDate = formatDate(debt.creadoEl);
-  
+
   final montoTotal = double.tryParse(debt.monto) ?? 0.0;
   final montoPagado = double.tryParse(debt.cantidadPagada) ?? 0.0;
   final montoPendiente = montoTotal - montoPagado;
-  
+
+  final esUSD = (debt.moneda?.toUpperCase() == 'USD');
+  final montoMostrar = esUSD 
+      ? (montoPendiente * 21.0).toStringAsFixed(2) 
+      : montoPendiente.toStringAsFixed(2);
+  final simboloMoneda = 'MXN';
+
   return Container(
     decoration: BoxDecoration(
       color: Colors.white,
@@ -619,7 +625,7 @@ Widget _buildDebtCard(UserDebtsEntity debt) {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 4),
-                        _buildDetailRow('Total:', '\$${debt.monto}'),
+                        _buildDetailRow('Total:', '\$$montoMostrar $simboloMoneda'),
                       ],
                     ),
                   ),
