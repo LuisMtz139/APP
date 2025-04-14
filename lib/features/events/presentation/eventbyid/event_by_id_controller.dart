@@ -15,14 +15,14 @@ class EventByIdController extends GetxController {
   final RxBool showAllPrices = false.obs;
   final RegisterEventUsecase registerEventUsecase;
   final RxBool isRegistering = false.obs;
+  
   EventByIdController({
     required this.eventByIdUsecase,
     required this.userDataUsecase,
-        required this.registerEventUsecase,
-
+    required this.registerEventUsecase,
   });
-  final RxBool isUserRegistered = false.obs;
-    final DashboardsController dashboardsController = Get.find<DashboardsController>();
+  
+  final DashboardsController dashboardsController = Get.find<DashboardsController>();
 
   final Rx<EventsEntity?> event = Rx<EventsEntity?>(null);
   final RxBool isLoading = true.obs;
@@ -203,7 +203,9 @@ class EventByIdController extends GetxController {
     final int available = total - registered;
     
     return '$available / $total ';
-  }  Future<void> registerToEvent(BuildContext context) async {
+  }  
+  
+  Future<void> registerToEvent(BuildContext context) async {
     if (event.value == null) return;
     
     try {
@@ -211,10 +213,16 @@ class EventByIdController extends GetxController {
       
       await registerEventUsecase.execute(event.value!.id.toString());
       
-      isUserRegistered.value = true;
+      // Actualizar el estado de inscripción
+      if (event.value != null) {
+        // Cargar el evento de nuevo para obtener el estado actualizado
+        await loadEvent(event.value!.id.toString());
+      }
+      
       dashboardsController.fetchEvents();
       dashboardsController.fetchUserDebts();
       dashboardsController.fetchUserData();
+      
       QuickAlert.show(
         context: context,
         type: QuickAlertType.success,
@@ -223,8 +231,6 @@ class EventByIdController extends GetxController {
         confirmBtnText: 'Aceptar',
         confirmBtnColor: Colors.green,
       );
-      
-      await loadEvent(event.value!.id.toString());
       
     } catch (e) {
       print('Error al registrarse al evento: $e');
@@ -241,12 +247,12 @@ class EventByIdController extends GetxController {
       isRegistering.value = false;
     }
   }
-void setUserRegistrationStatus(bool status) {
-    isUserRegistered.value = status;
-  }
   
   bool isUserAlreadyRegistered() {
-    return isUserRegistered.value;
+    // Verifica si el usuario ya está inscrito usando la propiedad isInEvent del evento
+    if (event.value != null && event.value!.isInEvent != null) {
+      return event.value!.isInEvent == "true";
+    }
+    return false;
   }
-
 }

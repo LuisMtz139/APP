@@ -21,6 +21,7 @@ class EventsEntity {
   final List<int> membresiasConAcceso;
   final int usuariosPagados;
   final int usuariosInscritos;
+  final String? isInEvent;
   
   final String? enfermeraO;
   final String? estudiante;
@@ -36,6 +37,7 @@ class EventsEntity {
 
   EventsEntity({
     required this.id,
+    this.isInEvent,
     required this.titulo,
     required this.tipoEvento,
     required this.fechaInicio,

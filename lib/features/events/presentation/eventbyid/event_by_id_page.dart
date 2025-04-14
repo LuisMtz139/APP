@@ -7,20 +7,17 @@ import 'package:get/get.dart';
 
 class EventByIdPage extends StatelessWidget {
   final String eventId;
-    final bool isAlreadyRegistered; 
 
   EventByIdPage({
     Key? key, 
     required this.eventId,
-    this.isAlreadyRegistered = false, 
   }) : super(key: key);
   
   final EventByIdController controller = Get.find<EventByIdController>();
 
   @override
   Widget build(BuildContext context) {
-     controller.loadEvent(eventId);
-  controller.setUserRegistrationStatus(isAlreadyRegistered);
+    controller.loadEvent(eventId);
   
     return Scaffold(
       backgroundColor: MedicalTheme.backgroundColor,
@@ -136,7 +133,7 @@ class EventByIdPage extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
-                child: Obx(() => controller.isUserRegistered.value
+                child: controller.isUserAlreadyRegistered()
                   ? Container(
                       height: 50,
                       decoration: BoxDecoration(
@@ -169,7 +166,7 @@ class EventByIdPage extends StatelessWidget {
                           ? () {}
                           : () => controller.registerToEvent(context),
                       height: 50,
-                    )),
+                    ),
               ),
             ],
           ),

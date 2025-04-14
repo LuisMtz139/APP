@@ -24,6 +24,7 @@ class EventsModel extends EventsEntity {
     required List<int> membresiasConAcceso,
     required int usuariosPagados,
     required int usuariosInscritos,
+    String? isInEvent,
     String? enfermeraO,
     String? estudiante,
     String? expresidente,
@@ -69,6 +70,7 @@ class EventsModel extends EventsEntity {
     socioResidente: socioResidente,
     socioTitular: socioTitular,
     tecnicoA: tecnicoA,
+    isInEvent: isInEvent,
   );
 
   factory EventsModel.fromJson(Map<String, dynamic> json) {
@@ -144,6 +146,7 @@ class EventsModel extends EventsEntity {
         socioResidente: json['Socio Residente']?.toString(),
         socioTitular: json['Socio Titular']?.toString(),
         tecnicoA: json['Técnico/a']?.toString(),
+        isInEvent: json['isInEvent']?.toString(),
       );
     } catch (e, stackTrace) {
       print('❌ Error en EventsModel.fromJson: $e');
@@ -167,6 +170,7 @@ class EventsModel extends EventsEntity {
         posterS3Llave: '',
         publicado: false,
         enInicio: false,
+        isInEvent: '',
         enlaceExterno: '',
         monedaPrecios: 'MXN',
         membresiasConAcceso: [],
@@ -211,6 +215,7 @@ class EventsModel extends EventsEntity {
       socioResidente: entity.socioResidente,
       socioTitular: entity.socioTitular,
       tecnicoA: entity.tecnicoA,
+      isInEvent: entity.isInEvent,
     );
   }
 
@@ -250,6 +255,7 @@ class EventsModel extends EventsEntity {
       'Socio Residente': socioResidente,
       'Socio Titular': socioTitular,
       'Técnico/a': tecnicoA,
+      'isInEvent': isInEvent,
     };
   }
 }

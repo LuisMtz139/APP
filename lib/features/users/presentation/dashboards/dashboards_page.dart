@@ -198,7 +198,6 @@ Widget _buildEventCard(EventsEntity event) {
         RoutesNames.eventbyid, 
         arguments: {
           'eventId': event.id.toString(),
-          'isRegistered': true, 
         }
       );
     },

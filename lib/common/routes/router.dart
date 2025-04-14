@@ -25,10 +25,8 @@ class AppPages {
   page: () {
     final Map<String, dynamic> args = Get.arguments as Map<String, dynamic>;
     final String eventId = args['eventId'] as String;
-    final bool isRegistered = args['isRegistered'] as bool? ?? false;
     return EventByIdPage(
       eventId: eventId,
-      isAlreadyRegistered: isRegistered,
     );
   },
   transition: Transition.rightToLeft,
