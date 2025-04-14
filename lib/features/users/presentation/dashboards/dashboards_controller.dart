@@ -104,14 +104,9 @@ Future<void> fetchUserData() async {
     if (userDataList.isNotEmpty) {
       userData.value = userDataList.first;
       userName.value = "${userData.value!.nombre} ${userData.value!.apellidoPaterno}";
-
-      // Obtener nombre de membresía
+      membresiaEstatus.value = userData.value!.estatus ?? 'No disponible';
       membresiaNombre.value = userData.value!.nombreMembresia ?? 'No especificada';
 
-      // Obtener estatus directamente desde el usuario
-      membresiaEstatus.value = userData.value!.estatus ?? 'No disponible';
-
-      // Fecha de creación
       final createdDate = DateTime.tryParse(userData.value!.creadoEl ?? '');
       if (createdDate != null) {
         final startYear = createdDate.year;
@@ -132,6 +127,7 @@ Future<void> fetchUserData() async {
     membresiaEstatus.value = "No disponible";
   }
 }
+
 
 
   Future<void> fetchUserDebts() async {
@@ -155,13 +151,6 @@ void _processDebtsData() {
     totalAdeudos.value = '0';
     montoTotalPendiente.value = 0.0;
     return;
-  }
-
-  // Mostrar directamente el estatus del primer registro
-  if (userDebts.isNotEmpty) {
-    membresiaEstatus.value = userDebts.first.estatus;
-  } else {
-    membresiaEstatus.value = 'No disponible';
   }
 
   final pendingDebts = userDebts.where(
