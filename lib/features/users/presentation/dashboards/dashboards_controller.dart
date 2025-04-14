@@ -185,7 +185,7 @@ void _processDebtsData() {
       GestureDetector(
         onTap: () => showDebtsModal(),
         child: _buildEnhancedStatusCard(
-          "Adeudos",
+          "",
           "${montoTotalPendiente.value.toStringAsFixed(2)}",
           Icons.account_balance_wallet,
           _getColorByAdeudos(totalAdeudos.value),

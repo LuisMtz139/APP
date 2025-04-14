@@ -107,7 +107,7 @@ class EventosPage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'próximos eventos',
+                            'Próximos eventos',
                             style: MedicalTheme.headingSmall,
                           ),
                           
