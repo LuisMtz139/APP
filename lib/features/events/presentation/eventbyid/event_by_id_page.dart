@@ -36,11 +36,7 @@ class EventByIdPage extends StatelessWidget {
           // Custom AppBar
           Container(
             color: MedicalTheme.backgroundColor,
-            child: Padding(
-              padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top,
-              ),
-              child: AppBar(
+            child: AppBar(
                 primary: false,
                 backgroundColor: MedicalTheme.backgroundColor,
                 elevation: 0,
@@ -77,7 +73,6 @@ class EventByIdPage extends StatelessWidget {
                 centerTitle: true,
                
               ),
-            ),
           ),
           
           // Content

@@ -291,10 +291,12 @@ void _processDebtsData() {
       return dateString;
     }
   }
-
 void showDebtsModal() {
   final screenHeight = MediaQuery.of(Get.context!).size.height;
   final screenWidth = MediaQuery.of(Get.context!).size.width;
+  
+  // Obtener la altura del padding inferior para evitar superposición con botones de navegación
+  final bottomPadding = MediaQuery.of(Get.context!).padding.bottom;
 
   Navigator.of(Get.context!).push(
     PageRouteBuilder(
@@ -399,7 +401,8 @@ void showDebtsModal() {
                                 
                                 // Acciones y resumen
                                 Padding(
-                                  padding: const EdgeInsets.all(24),
+                                  // Añadimos padding inferior adicional para evitar superposición con botones de navegación
+                                  padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomPadding),
                                   child: Column(
                                     children: [
                                       // Resumen

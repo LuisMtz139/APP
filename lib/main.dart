@@ -8,7 +8,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 String enviromentSelect = Enviroment.testing.value;
 
-void main() async{
+void main() async{ 
   WidgetsFlutterBinding.ensureInitialized();
  
   print('=========ENVIROMENT SELECTED: $enviromentSelect');                                         
