@@ -58,7 +58,6 @@ class EventosPage extends StatelessWidget {
                         children: [
                           _buildCategoryChip('Todos', controller.selectedCategory.value == 'Todos'),
                           _buildCategoryChip('Próximos', controller.selectedCategory.value == 'Próximos'),
-                          _buildCategoryChip('Seminarios', controller.selectedCategory.value == 'Seminarios'),
                           _buildCategoryChip('Congresos', controller.selectedCategory.value == 'Congresos'),
                           _buildCategoryChip('Cursos', controller.selectedCategory.value == 'Cursos'),
                         ],

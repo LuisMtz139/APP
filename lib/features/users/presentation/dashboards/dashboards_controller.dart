@@ -72,8 +72,6 @@ class DashboardsController extends GetxController {
       return Icons.people_rounded;
     } else if (tipo == 'curso') {
       return Icons.school_rounded;
-    } else if (tipo == 'seminario') {
-      return Icons.medical_information_rounded;
     } else {
       return Icons.event_rounded;
     }
@@ -90,8 +88,6 @@ class DashboardsController extends GetxController {
       return [Color(0xFF8A2BE2), Color(0xFFDA70D6)];
     } else if (tipo == 'curso') {
       return [Color(0xFF2E8B57), Color(0xFF3CB371)];
-    } else if (tipo == 'seminario') {
-      return [Color(0xFF0099cc), Color(0xFF00ccff)];
     } else {
       return [Color(0xFFFF8C00), Color(0xFFFFD700)];
     }

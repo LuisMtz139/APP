@@ -143,8 +143,6 @@ class EventByIdController extends GetxController {
     switch (eventType.toLowerCase()) {
       case 'congreso':
         return [Color(0xFF0099cc), Color(0xFF00ccff)];
-      case 'seminario':
-        return [Color(0xFF8A2BE2), Color(0xFFDA70D6)];
       case 'curso':
         return [Color(0xFF4CAF50), Color(0xFF8BC34A)];
       default:
@@ -156,8 +154,6 @@ class EventByIdController extends GetxController {
     switch (eventType.toLowerCase()) {
       case 'congreso':
         return Icons.people_alt_rounded;
-      case 'seminario':
-        return Icons.school_rounded;
       case 'curso':
         return Icons.book_rounded;
       default:
