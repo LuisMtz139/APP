@@ -22,6 +22,8 @@ class ApiExceptionCustom implements Exception {
         return "Recurso no encontrado";
       case 500:
         return "Error interno del servidor";
+      case 403:
+        return "Tu membresía no es válida para acceder a este evento.";
 
       default:
         return "Error desconocido";

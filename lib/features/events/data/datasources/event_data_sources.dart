@@ -28,6 +28,12 @@ Future<void> registerevent(String id,String token) async {
       if (response.statusCode == 201) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
       } else {
+              print('Error detallado: $response');
+              print(' Error detallad ${response.body}'); 
+                            print(' Error detallad  id ${id}'); 
+
+              print('Error detallado: ${response.statusCode}');
+
         final apiException = ApiExceptionCustom(response: response);
         apiException.validateMesage();
         throw Exception(apiException.message);
@@ -39,6 +45,7 @@ Future<void> registerevent(String id,String token) async {
       print('Error detallado: $e');
       throw Exception('$e');
     }  }
+
   @override
   Future<List<EventsEntity>> eventByid(String token, String id) async {
     try {
