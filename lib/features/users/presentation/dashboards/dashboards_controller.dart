@@ -97,35 +97,42 @@ class DashboardsController extends GetxController {
     }
   }
 
-  Future<void> fetchUserData() async {
-    try {
-      final userDataList = await _userDataUsecase.execute();
+Future<void> fetchUserData() async {
+  try {
+    final userDataList = await _userDataUsecase.execute();
 
-      if (userDataList.isNotEmpty) {
-        userData.value = userDataList.first;
-        userName.value = "${userData.value!.nombre} ${userData.value!.apellidoPaterno}";
-        
-        // Obtener nombre de membresía desde userData
-        membresiaNombre.value = userData.value!.nombreMembresia ?? 'No especificada';
-        
-        final createdDate = DateTime.tryParse(userData.value!.creadoEl ?? '');
-        if (createdDate != null) {
-          final startYear = createdDate.year;
-          final endYear = startYear + 1;
-          creadoEl.value = "$startYear - $endYear";
-        } else {
-          creadoEl.value = "No disponible";
-        }
+    if (userDataList.isNotEmpty) {
+      userData.value = userDataList.first;
+      userName.value = "${userData.value!.nombre} ${userData.value!.apellidoPaterno}";
+
+      // Obtener nombre de membresía
+      membresiaNombre.value = userData.value!.nombreMembresia ?? 'No especificada';
+
+      // Obtener estatus directamente desde el usuario
+      membresiaEstatus.value = userData.value!.estatus ?? 'No disponible';
+
+      // Fecha de creación
+      final createdDate = DateTime.tryParse(userData.value!.creadoEl ?? '');
+      if (createdDate != null) {
+        final startYear = createdDate.year;
+        final endYear = startYear + 1;
+        creadoEl.value = "$startYear - $endYear";
       } else {
-        userName.value = "Usuario";
-        membresiaNombre.value = "No disponible";
+        creadoEl.value = "No disponible";
       }
-    } catch (e) {
-      print('Error en fetchUserData: ${e.toString()}');
+    } else {
       userName.value = "Usuario";
       membresiaNombre.value = "No disponible";
+      membresiaEstatus.value = "No disponible";
     }
+  } catch (e) {
+    print('Error en fetchUserData: ${e.toString()}');
+    userName.value = "Usuario";
+    membresiaNombre.value = "No disponible";
+    membresiaEstatus.value = "No disponible";
   }
+}
+
 
   Future<void> fetchUserDebts() async {
     try {
