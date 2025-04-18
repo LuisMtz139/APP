@@ -24,10 +24,8 @@ class App extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: MedicalTheme.themeData, 
       initialBinding: BindingsBuilder(() {
-        // Servicios core primero
         Get.put(AuthService(), permanent: true);
         
-        // Registrar los usecases
         Get.put(usecaseConfig.userDataUsecase!, permanent: true);
         Get.put(usecaseConfig.loginUsecase!, permanent: true);
         Get.put(usecaseConfig.eventsUsecase!, permanent: true);
@@ -35,16 +33,12 @@ class App extends StatelessWidget {
         Get.put(usecaseConfig.userDebtsUsecase!, permanent: true);
         Get.put(usecaseConfig.userCalendarUsecase!, permanent: true);
         Get.put(usecaseConfig.registerEventUsecase!, permanent: true);
-        // Controladores siempre necesarios
         Get.put(SplashScreenController(
           clientDataUsecase: Get.find(),
         ));
         Get.put(LoginController(loginUsecase: Get.find()));
         
-        // Controladores que serán inicializados bajo demanda
         Get.lazyPut(() => EventsController(eventsUsecase: Get.find()), fenix: true);
-        // Nota: EventByIdController se registra en su propio binding userDebtsUsecase: usecaseConfig.userDebtsUsecase!,
-        // cuando se navega a la ruta correspondiente
         Get.lazyPut(() => EventByIdController(eventByIdUsecase: Get.find(), userDataUsecase: Get.find(), registerEventUsecase: Get.find()), fenix: true);
         Get.lazyPut(() => DashboardsController(
           userDebtsUsecase: Get.find(),

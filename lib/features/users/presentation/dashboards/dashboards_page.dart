@@ -4,8 +4,10 @@ import 'package:app_cirugia_endoscopica/features/events/domain/entities/events/e
 import 'package:app_cirugia_endoscopica/features/users/presentation/dashboards/dashboards_controller.dart';
 import 'package:app_cirugia_endoscopica/features/users/presentation/dashboards/widget/events_skeleton_loading.dart';
 import 'package:app_cirugia_endoscopica/features/users/presentation/dashboards/widget/statuscards_skeleton_loading.dart';
+import 'package:app_cirugia_endoscopica/main2.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 class DashboardsPage extends StatefulWidget {
   @override
@@ -132,348 +134,499 @@ class _DashboardScreenState extends State<DashboardsPage> {
   }
 
   Widget _buildUpcomingEventsSection() {
-    return Obx(() {
-      if (controller.isLoading.value) {
-        return EventsSkeletonLoading(); // Usar el nuevo componente de carga
-      }
-      
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-Row(
-  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  children: [
-    Text(
-      'Mis próximos eventos',
-      style: MedicalTheme.headingSmall,
-    ),
-     SizedBox(width: 180),
-    GestureDetector(
-      onTap: () {
-        // Aquí llamamos a la función para mostrar el modal de eventos
-        _showEventsModal(context);
-      },
-      child: Icon(
-        Icons.calendar_month_rounded, 
-        color: MedicalTheme.primaryColor,
-        size: 24,
-      ),
-    ),
-  ],
-),
-            ],
-          ),
-          const SizedBox(height: 20),
-          
-          // Lista de eventos destacados
-          if (controller.featuredEvents.isEmpty)
-            Center(
-              child: Column(
-                children: [
-                  SizedBox(height: 20),
-                  Icon(
-                    Icons.event_busy,
-                    size: 60,
-                    color: Colors.grey[400],
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'No hay eventos destacados disponibles',
-                    style: MedicalTheme.subtitleMedium.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
+  return Obx(() {
+    if (controller.isLoading.value) {
+      return EventsSkeletonLoading();
+    }
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Mis próximos eventos',
+              style: MedicalTheme.headingSmall,
+            ),
+            GestureDetector(
+              onTap: () {
+                _showEventsModal(context);
+              },
+              child: Icon(
+                Icons.calendar_month_rounded,
+                color: MedicalTheme.primaryColor,
+                size: 24,
               ),
-            )
-          else
-            ...controller.featuredEvents.map((event) => Padding(
-              padding: const EdgeInsets.only(bottom: 16.0),
-              child: _buildEventCard(event),
-            )).toList(),
-        ],
-      );
-    });
-  }
-
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        
+        // Lista de eventos destacados
+        if (controller.featuredEvents.isEmpty)
+          Center(
+            child: Column(
+              children: [
+                SizedBox(height: 20),
+                Icon(
+                  Icons.event_busy,
+                  size: 60,
+                  color: Colors.grey[400],
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'No hay eventos destacados disponibles',
+                  style: MedicalTheme.subtitleMedium.copyWith(
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          ...controller.featuredEvents.map((event) => Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: _buildEventCard(event),
+          )).toList(),
+      ],
+    );
+  });
+}
 void _showEventsModal(BuildContext context) {
   final screenHeight = MediaQuery.of(context).size.height;
   final screenWidth = MediaQuery.of(context).size.width;
   final bottomPadding = MediaQuery.of(context).padding.bottom;
-
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (context) {
-      return Container(
-        height: screenHeight * 0.7,
-        decoration: BoxDecoration(
-          color: MedicalTheme.cardColor,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, -5),
-            ),
-          ],
+  final topPadding = MediaQuery.of(context).padding.top;
+  
+  // Convertir actividades de eventos a appointments para el calendario
+List<Appointment> _getActivitiesAsAppointments() {
+  List<Appointment> appointments = [];
+  
+  // Solo procesar eventos que tienen actividades
+  final eventsWithActivities = controller.events.where((event) => 
+    event.activities != null && event.activities.isNotEmpty
+  ).toList();
+  
+  for (var event in eventsWithActivities) {
+    for (var activity in event.activities) {
+      // Convertir strings de fechas y horas a DateTime
+      final activityDate = DateTime.parse(activity.dia);
+      
+      // Parsear hora de inicio (formato HH:MM:SS)
+      final startTimeParts = activity.horaInicio.split(':');
+      final startHour = int.parse(startTimeParts[0]);
+      final startMinute = int.parse(startTimeParts[1]);
+      
+      // Parsear hora de fin
+      final endTimeParts = activity.horaFin.split(':');
+      final endHour = int.parse(endTimeParts[0]);
+      final endMinute = int.parse(endTimeParts[1]);
+      
+      // Crear fechas completas con hora de inicio y fin
+      final startTime = DateTime(
+        activityDate.year, 
+        activityDate.month, 
+        activityDate.day, 
+        startHour, 
+        startMinute
+      );
+      
+      final endTime = DateTime(
+        activityDate.year, 
+        activityDate.month, 
+        activityDate.day, 
+        endHour, 
+        endMinute
+      );
+      
+      // Crear appointment con los datos de la actividad
+      // CAMBIO AQUÍ: Usar MedicalTheme.primaryColor en lugar del color del evento
+      appointments.add(
+        Appointment(
+          startTime: startTime,
+          endTime: endTime,
+          subject: activity.nombreActividad,
+          location: activity.ubicacionActividad,
+          notes: activity.ponente, // Usar notes para guardar el ponente
+          color: MedicalTheme.secondaryColor, // Aquí está el cambio principal
+          isAllDay: false,
         ),
-        child: Column(
-          children: [
-            // Barra de arrastre
-            Container(
-              margin: const EdgeInsets.only(top: 12, bottom: 8),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: MedicalTheme.dividerColor,
-                borderRadius: BorderRadius.circular(2),
-              ),
+      );
+    }
+  }
+  
+  return appointments;
+}
+
+  
+  // Constructor personalizado para las citas en el calendario
+  Widget _buildAppointmentWidget(BuildContext context, CalendarAppointmentDetails details) {
+    final Appointment appointment = details.appointments.first;
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [appointment.color.withOpacity(0.85), appointment.color],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            appointment.subject,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
             ),
-            
-            // Título del modal
-            Padding(
-              padding: const EdgeInsets.only(top: 16, bottom: 24),
-              child: Text(
-                'Actividades',
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+          ),
+          if (appointment.notes != null && appointment.notes!.isNotEmpty)
+            Text(
+              appointment.notes!,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 10,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+        ],
+      ),
+    );
+  }
+
+  // Constructor personalizado para citas en la vista de agenda
+ Widget _buildAgendaAppointmentWidget(BuildContext context, CalendarAppointmentDetails details) {
+  final Appointment appointment = details.appointments.first;
+  
+  // Formatear hora de inicio y fin
+  final startHour = appointment.startTime.hour.toString().padLeft(2, '0');
+  final startMinute = appointment.startTime.minute.toString().padLeft(2, '0');
+  final endHour = appointment.endTime.hour.toString().padLeft(2, '0');
+  final endMinute = appointment.endTime.minute.toString().padLeft(2, '0');
+  
+  return Container(
+    margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(10),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.05),
+          blurRadius: 3,
+          offset: const Offset(0, 1),
+        ),
+      ],
+    ),
+    child: Row(
+      children: [
+        // Barra de color vertical que indica el tipo de evento
+        // ACTUALIZADO: Usar MedicalTheme.primaryColor
+        Container(
+          width: 6,
+          decoration: BoxDecoration(
+            color: MedicalTheme.primaryColor,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(10),
+              bottomLeft: Radius.circular(10),
+            ),
+          ),
+        ),
+        // Bloque de hora
+        Container(
+          width: 70,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "$startHour:$startMinute",
                 style: TextStyle(
-                  fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: MedicalTheme.textPrimaryColor,
+                  fontSize: 14,
+                  color: MedicalTheme.primaryColor,
                 ),
               ),
-            ),
-            
-            // Lista de eventos con actividades
-            Expanded(
-              child: Obx(() {
-                if (controller.isLoading.value) {
-                  return Center(
-                    child: CircularProgressIndicator(
-                      color: MedicalTheme.primaryColor,
+              const SizedBox(height: 2),
+              Text(
+                "$endHour:$endMinute",
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ),
+          // Contenido principal
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    appointment.subject,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
                     ),
-                  );
-                }
-                
-                // Filtrar eventos que tienen actividades
-                final eventsWithActivities = controller.events.where((event) => 
-                  event.activities != null && event.activities.isNotEmpty
-                ).toList();
-                
-                if (eventsWithActivities.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 3),
+                  if (appointment.notes != null && appointment.notes!.isNotEmpty)
+                    Row(
                       children: [
                         Icon(
-                          Icons.event_busy,
-                          size: 60,
-                          color: Colors.grey[400],
+                          Icons.person,
+                          size: 12,
+                          color:MedicalTheme.primaryColor,
                         ),
-                        SizedBox(height: 16),
-                        Text(
-                          'No hay eventos con actividades',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey[600],
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            appointment.notes!,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color:MedicalTheme.primaryColor,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
                     ),
-                  );
-                }
-                
-return ListView.separated(
-  padding: const EdgeInsets.symmetric(horizontal: 20),
-  itemCount: eventsWithActivities.length,
-  separatorBuilder: (_, __) => Divider(color: Colors.grey.withOpacity(0.3)),
-  itemBuilder: (_, index) {
-    final event = eventsWithActivities[index];
-    return ExpansionTile(
-      tilePadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-      leading: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: controller.getEventGradient(event.tipoEvento)[0].withOpacity(0.2),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(
-          controller.getEventIcon(event.tipoEvento),
-          color: controller.getEventGradient(event.tipoEvento)[0],
-          size: 24,
-        ),
-      ),
-      title: Text(
-        event.titulo,
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
-          color: MedicalTheme.textPrimaryColor,
-        ),
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-      ),
-      subtitle: Row(
-        children: [
-          Icon(
-            Icons.calendar_today_rounded,
-            size: 14,
-            color: MedicalTheme.textSecondaryColor,
-          ),
-          SizedBox(width: 4),
-          Text(
-            controller.formatDate(event.fechaInicio),
-            style: TextStyle(
-              fontSize: 14,
-              color: MedicalTheme.textSecondaryColor,
+                  if (appointment.location != null && appointment.location!.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 3),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.location_on,
+                            size: 12,
+                            color: MedicalTheme.primaryColor,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              appointment.location!,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: MedicalTheme.primaryColor,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ],
       ),
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          child: Column(
-            children: event.activities.map((activity) {
-              // Formatear hora de inicio y fin
-              final horaInicio = activity.horaInicio.substring(0, 5);
-              final horaFin = activity.horaFin.substring(0, 5);
-              
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    );
+  }
+
+ showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          final CalendarController calendarController = CalendarController();
+          calendarController.view = CalendarView.month;
+          
+          return Container(
+            // Ajustar la altura para evitar desbordamiento
+            height: screenHeight * 0.8,
+            // Asegurar que el contenedor no exceda los límites de la pantalla
+            width: screenWidth,
+            decoration: BoxDecoration(
+              color: MedicalTheme.cardColor,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, -5),
+                ),
+              ],
+            ),
+            // Usar ClipRRect para asegurar que nada se desborde fuera del contenedor
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+              child: Column(
                 children: [
-                  // Actividad
-                  Text(
-                    activity.nombreActividad,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
+                  // Barra de arrastre
+                  Container(
+                    margin: const EdgeInsets.only(top: 12, bottom: 8),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: MedicalTheme.dividerColor,
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  SizedBox(height: 8),
                   
-                  // Ponente
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.person,
-                        size: 14,
-                        color: MedicalTheme.textSecondaryColor,
-                      ),
-                      SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          activity.ponente,
-                          style: TextStyle(
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 6),
-                  
-                  // Fecha y hora
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.calendar_today,
-                        size: 14,
-                        color: MedicalTheme.textSecondaryColor,
-                      ),
-                      SizedBox(width: 4),
-                      Text(
-                        controller.formatDate(activity.dia),
-                        style: TextStyle(
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 6),
-                  
-                  // Horario
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.access_time,
-                        size: 14,
-                        color: MedicalTheme.textSecondaryColor,
-                      ),
-                      SizedBox(width: 4),
-                      Text(
-                        "$horaInicio - $horaFin",
-                        style: TextStyle(
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  // Ubicación (si existe)
-                  if (activity.ubicacionActividad.isNotEmpty) ...[
-                    SizedBox(height: 6),
-                    Row(
+                  // Título con botones de cambio de vista
+                  Padding(
+                    // Reducir márgenes horizontales para evitar desbordamiento
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Icon(
-                          Icons.location_on,
-                          size: 14,
-                          color: MedicalTheme.textSecondaryColor,
-                        ),
-                        SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            activity.ubicacionActividad,
-                            style: TextStyle(
-                              fontSize: 14,
-                            ),
+                        Text(
+                          'Calendario de Actividades',
+                          style: TextStyle(
+                            fontSize: 18, // Reducido de 20 a 18
+                            fontWeight: FontWeight.bold,
+                            color: MedicalTheme.textPrimaryColor,
                           ),
                         ),
+                        // Se eliminaron los botones de cambio de vista para simplificar
                       ],
                     ),
-                  ],
-                  SizedBox(height: 16),
-                ],
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  },
-);
-              }),
-            ),
-            
-            // Botón para cerrar
-            Padding(
-              padding: EdgeInsets.fromLTRB(20, 16, 20, 16 + bottomPadding),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: MedicalTheme.primaryColor,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                  child: Text('Cerrar'),
-                ),
+                  
+                  // Calendario con las actividades
+                  Expanded(
+                    child: Obx(() {
+                      if (controller.isLoading.value) {
+                        return Center(
+                          child: CircularProgressIndicator(
+                            color: MedicalTheme.primaryColor,
+                          ),
+                        );
+                      }
+                      
+                      final eventsWithActivities = controller.events.where((event) => 
+                        event.activities != null && event.activities.isNotEmpty
+                      ).toList();
+                      
+                      if (eventsWithActivities.isEmpty) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.event_busy,
+                                size: 60,
+                                color: Colors.grey[400],
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                'No hay actividades disponibles',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                      
+                      final appointments = _getActivitiesAsAppointments();
+                      
+                      return Padding(
+                        // Reducir el padding horizontal para evitar desbordamiento
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: SfCalendar(
+                          controller: calendarController,
+                          dataSource: AppointmentDataSource(appointments),
+                          todayHighlightColor: MedicalTheme.primaryColor,
+                          selectionDecoration: BoxDecoration(
+                            color: MedicalTheme.primaryColor.withOpacity(0.2),
+                            border: Border.all(
+                              color: MedicalTheme.primaryColor,
+                              width: 1.5,
+                            ),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          // Otros parámetros mantenidos
+                          headerStyle: CalendarHeaderStyle(
+                            textAlign: TextAlign.center,
+                            textStyle: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: MedicalTheme.textPrimaryColor,
+                            ),
+                          ),
+                          viewHeaderStyle: ViewHeaderStyle(
+                            backgroundColor: MedicalTheme.surfaceColor.withOpacity(0.3),
+                            dayTextStyle: TextStyle(
+                              color: MedicalTheme.textSecondaryColor,
+                              fontSize: 12,
+                            ),
+                            dateTextStyle: TextStyle(
+                              color: MedicalTheme.textPrimaryColor,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          monthViewSettings: MonthViewSettings(
+                            // Reducir la altura de la vista de agenda para evitar desbordamiento
+                            showAgenda: true,
+                            agendaViewHeight: 200, // Reducido para evitar desbordamiento
+                            appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
+                            agendaItemHeight: 65, // Reducido para evitar desbordamiento
+                          ),
+                          showNavigationArrow: true,
+                          viewNavigationMode: ViewNavigationMode.snap,
+                          showDatePickerButton: true,
+                          showCurrentTimeIndicator: true,
+                        ),
+                      );
+                    }),
+                  ),
+                  
+                  // Botón para cerrar
+                 Container(
+  width: double.infinity,
+  // Usa MediaQuery para obtener la altura de la barra de navegación
+  padding: EdgeInsets.fromLTRB(
+    16, 
+    8, 
+    16, 
+    8 + MediaQuery.of(context).viewPadding.bottom
+  ),
+  child: ElevatedButton(
+    onPressed: () => Navigator.pop(context),
+    style: ElevatedButton.styleFrom(
+      backgroundColor: MedicalTheme.primaryColor,
+      foregroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 12),
+    ),
+    child: Text('Cerrar'),
+  ),
+),
+                ],
               ),
             ),
-          ],
-        ),
+          );
+        },
       );
     },
   );
