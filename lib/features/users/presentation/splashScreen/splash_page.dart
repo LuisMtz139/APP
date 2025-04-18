@@ -9,9 +9,11 @@ class SplashPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.checkAuthentication();
-    });
+WidgetsBinding.instance.addPostFrameCallback((_) {
+  precacheImage(AssetImage('assets/surgeon_background.png'), context);
+  controller.checkAuthentication();
+});
+
 
     return Scaffold(
       body: Container(
@@ -19,12 +21,23 @@ class SplashPage extends StatelessWidget {
         height: double.infinity,
         child: Stack(
           children: [
-            Positioned.fill(
-              child: Image.asset(
-                'assets/surgeon_background.png', 
-                fit: BoxFit.cover,
-              ),
-            ),
+Positioned.fill(
+  child: Image.asset(
+    'assets/surgeon_background.png',
+    fit: BoxFit.cover,
+    frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+      if (wasSynchronouslyLoaded) {
+        return child;
+      }
+      return AnimatedOpacity(
+        opacity: frame == null ? 0 : 1,
+        duration: const Duration(seconds: 1),
+        child: child,
+      );
+    },
+  ),
+),
+
             
             Positioned.fill(
               child: Container(

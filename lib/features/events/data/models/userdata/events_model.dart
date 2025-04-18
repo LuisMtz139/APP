@@ -36,6 +36,7 @@ class EventsModel extends EventsEntity {
     String? socioResidente,
     String? socioTitular,
     String? tecnicoA,
+    List<ActivityEntity> activities = const [],
   }) : super(
     id: id,
     titulo: titulo,
@@ -71,10 +72,47 @@ class EventsModel extends EventsEntity {
     socioTitular: socioTitular,
     tecnicoA: tecnicoA,
     isInEvent: isInEvent,
+    activities: activities,
   );
 
   factory EventsModel.fromJson(Map<String, dynamic> json) {
-    // Manejo seguro de listas
+    // Parseo de actividades
+    List<ActivityEntity> parseActivities(dynamic value) {
+      if (value == null) return [];
+      if (value is List) {
+        return value.map((item) {
+          if (item is Map<String, dynamic>) {
+            return ActivityEntity(
+              id: item['id'] ?? 0,
+              eventoId: item['eventoId'] ?? 0,
+              dia: item['dia'] ?? '',
+              horaInicio: item['horaInicio'] ?? '',
+              horaFin: item['horaFin'] ?? '',
+              nombreActividad: item['nombreActividad'] ?? '',
+              ponente: item['ponente'] ?? '',
+              ubicacionActividad: item['ubicacionActividad'] ?? '',
+              creadoEl: item['creadoEl'] ?? '',
+              actualizadoEl: item['actualizadoEl'] ?? '',
+            );
+          }
+          return ActivityEntity(
+            id: 0,
+            eventoId: 0,
+            dia: '',
+            horaInicio: '',
+            horaFin: '',
+            nombreActividad: '',
+            ponente: '',
+            ubicacionActividad: '',
+            creadoEl: '',
+            actualizadoEl: '',
+          );
+        }).toList();
+      }
+      return [];
+    }
+
+    // Resto del código existente...
     List<int> parseMembresiasConAcceso(dynamic value) {
       if (value == null) return [];
       if (value is List) {
@@ -147,6 +185,7 @@ class EventsModel extends EventsEntity {
         socioTitular: json['Socio Titular']?.toString(),
         tecnicoA: json['Técnico/a']?.toString(),
         isInEvent: json['isInEvent']?.toString(),
+        activities: parseActivities(json['activities']), // Agregamos el parseo de actividades
       );
     } catch (e, stackTrace) {
       print('❌ Error en EventsModel.fromJson: $e');
@@ -176,6 +215,7 @@ class EventsModel extends EventsEntity {
         membresiasConAcceso: [],
         usuariosPagados: 0,
         usuariosInscritos: 0,
+        activities: [], // Inicializamos con lista vacía
       );
     }
   }
@@ -216,6 +256,7 @@ class EventsModel extends EventsEntity {
       socioTitular: entity.socioTitular,
       tecnicoA: entity.tecnicoA,
       isInEvent: entity.isInEvent,
+      activities: entity.activities, // Incluimos las actividades
     );
   }
 
@@ -256,6 +297,18 @@ class EventsModel extends EventsEntity {
       'Socio Titular': socioTitular,
       'Técnico/a': tecnicoA,
       'isInEvent': isInEvent,
+      'activities': activities.map((activity) => {
+        'id': activity.id,
+        'eventoId': activity.eventoId,
+        'dia': activity.dia,
+        'horaInicio': activity.horaInicio,
+        'horaFin': activity.horaFin,
+        'nombreActividad': activity.nombreActividad,
+        'ponente': activity.ponente,
+        'ubicacionActividad': activity.ubicacionActividad,
+        'creadoEl': activity.creadoEl,
+        'actualizadoEl': activity.actualizadoEl,
+      }).toList(), // Incluimos las actividades en el JSON
     };
   }
 }

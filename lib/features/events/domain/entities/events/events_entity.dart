@@ -34,6 +34,9 @@ class EventsEntity {
   final String? socioResidente;
   final String? socioTitular;
   final String? tecnicoA;
+  
+  // Nueva propiedad para las actividades
+  final List<ActivityEntity> activities;
 
   EventsEntity({
     required this.id,
@@ -70,7 +73,32 @@ class EventsEntity {
     this.socioResidente,
     this.socioTitular,
     this.tecnicoA,
+    this.activities = const [],
   });
+}
 
-  
+class ActivityEntity {
+  final int id;
+  final int eventoId;
+  final String dia;
+  final String horaInicio;
+  final String horaFin;
+  final String nombreActividad;
+  final String ponente;
+  final String ubicacionActividad;
+  final String creadoEl;
+  final String actualizadoEl;
+
+  ActivityEntity({
+    required this.id,
+    required this.eventoId,
+    required this.dia,
+    required this.horaInicio,
+    required this.horaFin,
+    required this.nombreActividad,
+    required this.ponente,
+    required this.ubicacionActividad,
+    required this.creadoEl,
+    required this.actualizadoEl,
+  });
 }

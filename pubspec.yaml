@@ -76,6 +76,7 @@ flutter:
   assets:
       - assets/AMCE.png
       - assets/surgeon_background.png
+      - assets/nuevo_sugeon.jpg
       - .env
       - test.env
       - dev.env

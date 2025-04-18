@@ -22,17 +22,19 @@ class SplashScreenController extends GetxController {
   
 
   
-  Future<void> checkAuthentication() async {
-    try {
-       await clientDataUsecase.execute();
-              Get.offAllNamed('/homePage');
-
-    } catch (e) {
-      print('⚠️ Error al obtener datos de cliente: $e');
-      Get.offAllNamed('/login');
-    } finally {
-      isLoading.value = false;
-    }
+Future<void> checkAuthentication() async {
+  try {
+    await Future.delayed(Duration(seconds: 2)); // <- Espera para mostrar el splash
+    await clientDataUsecase.execute();
+    
+    Get.offAllNamed('/homePage');
+  } catch (e) {
+    print('⚠️ Error al obtener datos de cliente: $e');
+    Get.offAllNamed('/login');
+  } finally {
+    isLoading.value = false;
   }
+}
+
   
 }
