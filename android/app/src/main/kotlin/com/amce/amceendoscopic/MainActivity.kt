@@ -1,4 +1,4 @@
-package com.example.app_cirugia_endoscopica
+package com.amce.amceendoscopic
 
 import io.flutter.embedding.android.FlutterActivity
 
