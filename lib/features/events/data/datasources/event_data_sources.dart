@@ -30,7 +30,7 @@ Future<void> registerevent(String id,String token) async {
       } else {
               print('Error detallado: $response');
               print(' Error detallad ${response.body}'); 
-                            print(' Error detallad  id ${id}'); 
+                            print(' Error detallad  id $id'); 
 
               print('Error detallado: ${response.statusCode}');
 

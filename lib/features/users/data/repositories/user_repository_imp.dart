@@ -2,7 +2,6 @@
 import 'package:app_cirugia_endoscopica/common/services/auth_service.dart';
 import 'package:app_cirugia_endoscopica/features/users/data/datasources/user_data_sources.dart';
 import 'package:app_cirugia_endoscopica/features/users/data/models/login_response.dart';
-import 'package:app_cirugia_endoscopica/features/users/data/models/userdata/user_data_model.dart';
 import 'package:app_cirugia_endoscopica/features/users/domain/entities/user_data_entity.dart';
 import 'package:app_cirugia_endoscopica/features/users/domain/entities/userdebts/user_debts_entity.dart';
 import 'package:app_cirugia_endoscopica/features/users/domain/repositories/user_repository.dart';

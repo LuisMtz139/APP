@@ -636,7 +636,7 @@ class DashboardsController extends GetxController {
     final montoPagado = double.tryParse(debt.cantidadPagada) ?? 0.0;
     final montoPendiente = montoTotal - montoPagado;
 
-    final esUSD = (debt.moneda?.toUpperCase() == 'USD');
+    final esUSD = (debt.moneda.toUpperCase() == 'USD');
     final montoMostrar = esUSD 
         ? (montoPendiente * 21.0).toStringAsFixed(2) 
         : montoPendiente.toStringAsFixed(2);

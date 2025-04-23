@@ -380,31 +380,28 @@ void printEventPrices() {
     );
   }
   
-  // Método para abrir la URL de pago
-  void _launchPaymentURL() async {
-    const url = 'https://www.amce.org.mx/asociados';
-    try {
-      if (await canLaunch(url)) {
-        await launch(url);
-      } else {
-        Get.snackbar(
-          'Error',
-          'No se pudo abrir el enlace de pago',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red[100],
-          colorText: Colors.red[800],
-        );
-      }
-    } catch (e) {
+void _launchPaymentURL() async {
+  final Uri url = Uri.parse('https://www.amce.org.mx/asociados');
+  try {
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
       Get.snackbar(
         'Error',
-        'Ocurrió un problema al intentar abrir el enlace',
+        'No se pudo abrir el enlace de pago',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red[100],
         colorText: Colors.red[800],
       );
     }
+  } catch (e) {
+    Get.snackbar(
+      'Error',
+      'Ocurrió un problema al intentar abrir el enlace: ${e.toString()}',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.red[100],
+      colorText: Colors.red[800],
+    );
   }
+}
   
   bool isUserAlreadyRegistered() {
     // Verifica si el usuario ya está inscrito usando la propiedad isInEvent del evento

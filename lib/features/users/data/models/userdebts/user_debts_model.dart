@@ -2,40 +2,23 @@ import 'package:app_cirugia_endoscopica/features/users/domain/entities/userdebts
 
 class UserDebtsModel extends UserDebtsEntity {
   UserDebtsModel({
-    required String id,
-    required int idUsuario,
-    required String tipoAdeudo,
-    int? fechaMembresia,
-    String? nombreMembresia,  // Ahora es nullable
-    int? membresiaId,
-    int? eventoId,
-    required String monto,
-    required String moneda,
-    required String cantidadPagada,
-    required String descripcion,
-    required String estatus,
-    required String creadoEl,
-    required String actualizadoEl,
-    required String rfcUsuario,
-    String? tituloEvento,
-  }) : super(
-          id: id,
-          idUsuario: idUsuario,
-          tipoAdeudo: tipoAdeudo,
-          fechaMembresia: fechaMembresia,
-          nombreMembresia: nombreMembresia,
-          membresiaId: membresiaId,
-          eventoId: eventoId,
-          monto: monto,
-          moneda: moneda,
-          cantidadPagada: cantidadPagada,
-          descripcion: descripcion,
-          estatus: estatus,
-          creadoEl: creadoEl,
-          actualizadoEl: actualizadoEl,
-          rfcUsuario: rfcUsuario,
-          tituloEvento: tituloEvento,
-        );
+    required super.id,
+    required super.idUsuario,
+    required super.tipoAdeudo,
+    super.fechaMembresia,
+    super.nombreMembresia,  // Ahora es nullable
+    super.membresiaId,
+    super.eventoId,
+    required super.monto,
+    required super.moneda,
+    required super.cantidadPagada,
+    required super.descripcion,
+    required super.estatus,
+    required super.creadoEl,
+    required super.actualizadoEl,
+    required super.rfcUsuario,
+    super.tituloEvento,
+  });
 
   factory UserDebtsModel.fromJson(Map<String, dynamic> json) {
     try {

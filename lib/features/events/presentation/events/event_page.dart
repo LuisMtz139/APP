@@ -127,7 +127,7 @@ class EventosPage extends StatelessWidget {
                       ...controller.featuredEvents.map((event) => Padding(
                         padding: const EdgeInsets.only(bottom: 16.0),
                         child: _buildEventCard(event),
-                      )).toList(),
+                      )),
                     
                     const SizedBox(height: 30),
 

@@ -15,7 +15,7 @@ class DashboardsPage extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardsPage> {
-  int _selectedIndex = 0;
+  final int _selectedIndex = 0;
   final DashboardsController controller = Get.find<DashboardsController>();
   void _showDatePicker(BuildContext context) async {
   final DateTime? picked = await showDatePicker(
@@ -262,7 +262,7 @@ Widget _buildDateFilterChip(String label, bool isSelected) {
           ...controller.featuredEvents.map((event) => Padding(
             padding: const EdgeInsets.only(bottom: 16.0),
             child: _buildEventCard(event),
-          )).toList(),
+          )),
       ],
     );
   });
@@ -291,7 +291,7 @@ void _showEventsModal(BuildContext context) {
   final bottomPadding = MediaQuery.of(context).padding.bottom;
   final topPadding = MediaQuery.of(context).padding.top;
   
-  List<Appointment> _getActivitiesAsAppointments() {
+  List<Appointment> getActivitiesAsAppointments() {
   List<Appointment> appointments = [];
   
   // Solo procesar eventos que tienen actividades
@@ -341,7 +341,7 @@ void _showEventsModal(BuildContext context) {
           endTime: endTime,
           subject: activity.nombreActividad,
           location: activity.ubicacionActividad,
-          notes: "${formattedStartTime} - ${formattedEndTime} | ${activity.ponente}", // Incluir horas en notes
+          notes: "$formattedStartTime - $formattedEndTime | ${activity.ponente}", // Incluir horas en notes
           color: MedicalTheme.secondaryColor,
           isAllDay: false,
         ),
@@ -454,7 +454,7 @@ void _showEventsModal(BuildContext context) {
                         );
                       }
                       
-                      final appointments = _getActivitiesAsAppointments();
+                      final appointments = getActivitiesAsAppointments();
                       
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
