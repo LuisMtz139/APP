@@ -17,7 +17,64 @@ class DashboardsPage extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardsPage> {
   int _selectedIndex = 0;
   final DashboardsController controller = Get.find<DashboardsController>();
-
+  void _showDatePicker(BuildContext context) async {
+  final DateTime? picked = await showDatePicker(
+    context: context,
+    initialDate: controller.specificDate.value ?? DateTime.now(),
+    firstDate: DateTime(2020),
+    lastDate: DateTime(2030),
+    builder: (BuildContext context, Widget? child) {
+      return Theme(
+        data: ThemeData.light().copyWith(
+          colorScheme: ColorScheme.light(
+            primary: MedicalTheme.primaryColor,
+            onPrimary: Colors.white,
+            surface: MedicalTheme.surfaceColor,
+            onSurface: MedicalTheme.textPrimaryColor,
+          ),
+          dialogBackgroundColor: MedicalTheme.cardColor,
+        ),
+        child: child!,
+      );
+    },
+  );
+  
+  if (picked != null) {
+    // Si se seleccionó una fecha, actualizamos el filtro
+    controller.setSpecificDate(picked);
+    controller.changeDateFilter('Fecha específica');
+  }
+}
+Widget _buildDateFilterChip(String label, bool isSelected) {
+  return GestureDetector(
+    onTap: () {
+      if (label == 'Fecha específica') {
+        // Si se presiona "Fecha específica", abrimos el selector de fecha
+        _showDatePicker(context);
+      } else {
+        // Para los demás filtros, cambiamos directamente
+        controller.changeDateFilter(label);
+      }
+    },
+    child: Container(
+      margin: EdgeInsets.only(right: 10),
+      child: Chip(
+        label: Text(
+          label == 'Fecha específica' && controller.specificDateFormatted.value.isNotEmpty
+              ? controller.specificDateFormatted.value
+              : label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : MedicalTheme.textPrimaryColor,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+        backgroundColor: isSelected ? MedicalTheme.primaryColor : MedicalTheme.surfaceColor,
+        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      ),
+    ),
+  );
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -161,6 +218,24 @@ class _DashboardScreenState extends State<DashboardsPage> {
             ),
           ],
         ),
+        const SizedBox(height: 16),
+        
+        // Filtros de fecha
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: BouncingScrollPhysics(),
+          child: Obx(() => Row(
+            children: [
+              _buildDateFilterChip('Todos', controller.selectedDateFilter.value == 'Todos'),
+              _buildDateFilterChip('Hoy', controller.selectedDateFilter.value == 'Hoy'),
+              _buildDateFilterChip('Mañana', controller.selectedDateFilter.value == 'Mañana'),
+              _buildDateFilterChip('Esta semana', controller.selectedDateFilter.value == 'Esta semana'),
+              _buildDateFilterChip('Este mes', controller.selectedDateFilter.value == 'Este mes'),
+              _buildDateFilterChip('Fecha específica', controller.selectedDateFilter.value == 'Fecha específica'),
+            ],
+          )),
+        ),
+        
         const SizedBox(height: 20),
         
         // Lista de eventos destacados
@@ -176,7 +251,7 @@ class _DashboardScreenState extends State<DashboardsPage> {
                 ),
                 SizedBox(height: 16),
                 Text(
-                  'No hay eventos destacados disponibles',
+                  'No hay eventos disponibles para ${_getFilterText()}',
                   style: MedicalTheme.subtitleMedium.copyWith(
                     color: Colors.grey[600],
                   ),
@@ -192,6 +267,24 @@ class _DashboardScreenState extends State<DashboardsPage> {
       ],
     );
   });
+}
+
+// Método auxiliar para obtener texto descriptivo del filtro actual
+String _getFilterText() {
+  switch (controller.selectedDateFilter.value) {
+    case 'Hoy':
+      return 'hoy';
+    case 'Mañana':
+      return 'mañana';
+    case 'Esta semana':
+      return 'esta semana';
+    case 'Este mes':
+      return 'este mes';
+    case 'Fecha específica':
+      return controller.specificDateFormatted.value;
+    default:
+      return 'el filtro seleccionado';
+  }
 }
 void _showEventsModal(BuildContext context) {
   final screenHeight = MediaQuery.of(context).size.height;
