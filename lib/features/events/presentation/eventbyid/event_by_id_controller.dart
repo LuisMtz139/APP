@@ -67,6 +67,43 @@ class EventByIdController extends GetxController {
       isLoadingMembership.value = false;
     }
   }
+void printEventActivities() {
+  if (event.value == null) {
+    print('No hay evento cargado.');
+    return;
+  }
+  final activities = event.value!.activities;
+  if (activities.isEmpty) {
+    print('El evento no tiene actividades registradas.');
+    return;
+  }
+  print('Actividades del evento "${event.value!.titulo}":');
+  for (final actividad in activities) {
+    print('- Día: ${actividad.dia}, ${actividad.horaInicio.substring(0,5)}-${actividad.horaFin.substring(0,5)}');
+    print('  Nombre: ${actividad.nombreActividad}');
+    print('  Ponente: ${actividad.ponente}');
+    print('  Ubicación: ${actividad.ubicacionActividad.isEmpty ? "N/A" : actividad.ubicacionActividad}');
+    print('');
+  }
+}
+
+void printEventPrices() {
+  if (event.value == null) {
+    print('No hay evento cargado.');
+    return;
+  }
+  final prices = getPricesMap();
+  if (prices.isEmpty) {
+    print('No hay precios disponibles para este evento.');
+    return;
+  }
+  final moneda = event.value!.monedaPrecios;
+  print('Costos del evento "${event.value!.titulo}":');
+  prices.forEach((membresia, precio) {
+    print('- $membresia: $moneda $precio');
+  });
+}
+  
 
   void _processUserData() {
     if (userData.isEmpty) {
@@ -97,6 +134,8 @@ class EventByIdController extends GetxController {
       if (events.isNotEmpty) {
         event.value = events.first;
         print('Evento cargado exitosamente: ${event.value!.titulo}');
+        printEventActivities(); // <-- Aquí imprime actividades al cargar el evento
+        printEventPrices();     // <-- Aquí imprime precios al cargar el evento
       } else {
         hasError.value = true;
         errorMessage.value = 'No se encontró el evento';
