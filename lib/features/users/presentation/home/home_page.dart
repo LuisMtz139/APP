@@ -92,50 +92,46 @@ class HomePage extends StatelessWidget {
          
         ],
       ),
-      actions: [
-        IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: MedicalTheme.surfaceColor,
-              borderRadius: BorderRadius.circular(10),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Icon(
-              Icons.logout_rounded ,
-              color: MedicalTheme.primaryColor,
-              size: 20,
-            )
-          ),
-        onPressed: () {
-  QuickAlert.show(
-    context: Get.context!,
-    type: QuickAlertType.confirm,
-    title: '¿Estás seguro?',
-    text: '¿Quieres cerrar sesión?',
-    confirmBtnText: 'Sí',
-    cancelBtnText: 'No',
-    onConfirmBtnTap: () {
-      final AuthService authService = AuthService();
-      authService.logout();
-      Get.offAllNamed('/login');
+ actions: [
+  GestureDetector(
+    onTap: () {
+      QuickAlert.show(
+        context: Get.context!,
+        type: QuickAlertType.confirm,
+        title: '¿Estás seguro?',
+        text: '¿Quieres cerrar sesión?',
+        confirmBtnText: 'Sí',
+        cancelBtnText: 'No',
+        onConfirmBtnTap: () {
+          final AuthService authService = AuthService();
+          authService.logout();
+          Get.offAllNamed('/login');
+        },
+        onCancelBtnTap: () {
+          Get.back();
+        },
+      );
     },
-    onCancelBtnTap: () {
-      Get.back();
-      
-    },
-  );
-},
-
+    child: Container(
+      width: 44, // Mismo tamaño que el logo
+      height: 44,
+      decoration: BoxDecoration(
+        color: MedicalTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(12), // Igual que el logo
+        boxShadow: [MedicalTheme.lightShadow],
+      ),
+      padding: const EdgeInsets.all(6), // Igual que el logo
+      child: Center(
+        child: Icon(
+          Icons.logout_rounded,
+          color: MedicalTheme.primaryColor,
+          size: 26, // Ajusta según el tamaño visual del logo
         ),
-        const SizedBox(width: 12),
-      ],
+      ),
+    ),
+  ),
+  const SizedBox(width: 12),
+],
     );
   }
 }
