@@ -291,64 +291,66 @@ void _showEventsModal(BuildContext context) {
   final bottomPadding = MediaQuery.of(context).padding.bottom;
   final topPadding = MediaQuery.of(context).padding.top;
   
-  // Convertir actividades de eventos a appointments para el calendario
   List<Appointment> _getActivitiesAsAppointments() {
-    List<Appointment> appointments = [];
-    
-    // Solo procesar eventos que tienen actividades
-    final eventsWithActivities = controller.events.where((event) => 
-      event.activities != null && event.activities.isNotEmpty
-    ).toList();
-    
-    for (var event in eventsWithActivities) {
-      for (var activity in event.activities) {
-        // Convertir strings de fechas y horas a DateTime
-        final activityDate = DateTime.parse(activity.dia);
-        
-        // Parsear hora de inicio (formato HH:MM:SS)
-        final startTimeParts = activity.horaInicio.split(':');
-        final startHour = int.parse(startTimeParts[0]);
-        final startMinute = int.parse(startTimeParts[1]);
-        
-        // Parsear hora de fin
-        final endTimeParts = activity.horaFin.split(':');
-        final endHour = int.parse(endTimeParts[0]);
-        final endMinute = int.parse(endTimeParts[1]);
-        
-        // Crear fechas completas con hora de inicio y fin
-        final startTime = DateTime(
-          activityDate.year, 
-          activityDate.month, 
-          activityDate.day, 
-          startHour, 
-          startMinute
-        );
-        
-        final endTime = DateTime(
-          activityDate.year, 
-          activityDate.month, 
-          activityDate.day, 
-          endHour, 
-          endMinute
-        );
-        
-        // Crear appointment con los datos de la actividad
-        appointments.add(
-          Appointment(
-            startTime: startTime,
-            endTime: endTime,
-            subject: activity.nombreActividad,
-            location: activity.ubicacionActividad,
-            notes: activity.ponente, // Usar notes para guardar el ponente
-            color: MedicalTheme.secondaryColor,
-            isAllDay: false,
-          ),
-        );
-      }
+  List<Appointment> appointments = [];
+  
+  // Solo procesar eventos que tienen actividades
+  final eventsWithActivities = controller.events.where((event) => 
+    event.activities != null && event.activities.isNotEmpty
+  ).toList();
+  
+  for (var event in eventsWithActivities) {
+    for (var activity in event.activities) {
+      // Convertir strings de fechas y horas a DateTime
+      final activityDate = DateTime.parse(activity.dia);
+      
+      // Parsear hora de inicio (formato HH:MM:SS)
+      final startTimeParts = activity.horaInicio.split(':');
+      final startHour = int.parse(startTimeParts[0]);
+      final startMinute = int.parse(startTimeParts[1]);
+      
+      // Parsear hora de fin
+      final endTimeParts = activity.horaFin.split(':');
+      final endHour = int.parse(endTimeParts[0]);
+      final endMinute = int.parse(endTimeParts[1]);
+      
+      // Formatear las horas para mostrarlas
+      final formattedStartTime = "${startHour.toString().padLeft(2, '0')}:${startMinute.toString().padLeft(2, '0')}";
+      final formattedEndTime = "${endHour.toString().padLeft(2, '0')}:${endMinute.toString().padLeft(2, '0')}";
+      
+      // Crear fechas completas con hora de inicio y fin
+      final startTime = DateTime(
+        activityDate.year, 
+        activityDate.month, 
+        activityDate.day, 
+        startHour, 
+        startMinute
+      );
+      
+      final endTime = DateTime(
+        activityDate.year, 
+        activityDate.month, 
+        activityDate.day, 
+        endHour, 
+        endMinute
+      );
+      
+      appointments.add(
+        Appointment(
+          startTime: startTime,
+          endTime: endTime,
+          subject: activity.nombreActividad,
+          location: activity.ubicacionActividad,
+          notes: "${formattedStartTime} - ${formattedEndTime} | ${activity.ponente}", // Incluir horas en notes
+          color: MedicalTheme.secondaryColor,
+          isAllDay: false,
+        ),
+      );
     }
-    
-    return appointments;
   }
+  
+  return appointments;
+}
 
   showModalBottomSheet(
     context: context,
@@ -552,8 +554,6 @@ SfCalendar(
   );
 }
 
-
-  // Actualiza el método _buildAppointmentWidget para manejar mejor el espacio
 Widget _buildAppointmentWidget(BuildContext context, CalendarAppointmentDetails details) {
   final Appointment appointment = details.appointments.first;
   
@@ -585,13 +585,13 @@ Widget _buildAppointmentWidget(BuildContext context, CalendarAppointmentDetails 
       // Si hay espacio suficiente, mostramos el contenido
       : Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min, // Importante: minimiza el tamaño vertical
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               appointment.subject,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 12, // Reducido de 13 a 12
+                fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),
               overflow: TextOverflow.ellipsis,
@@ -599,7 +599,7 @@ Widget _buildAppointmentWidget(BuildContext context, CalendarAppointmentDetails 
             ),
             if (appointment.notes != null && 
                 appointment.notes!.isNotEmpty &&
-                details.bounds.height > 40) // Solo mostrar ponente si hay suficiente espacio
+                details.bounds.height > 40)
               Text(
                 appointment.notes!,
                 style: const TextStyle(
@@ -618,11 +618,19 @@ Widget _buildAppointmentWidget(BuildContext context, CalendarAppointmentDetails 
  Widget _buildAgendaAppointmentWidget(BuildContext context, CalendarAppointmentDetails details) {
   final Appointment appointment = details.appointments.first;
   
-  // Formatear hora de inicio y fin
-  final startHour = appointment.startTime.hour.toString().padLeft(2, '0');
-  final startMinute = appointment.startTime.minute.toString().padLeft(2, '0');
-  final endHour = appointment.endTime.hour.toString().padLeft(2, '0');
-  final endMinute = appointment.endTime.minute.toString().padLeft(2, '0');
+  // Extraer horas y ponente del campo notes (si contiene el formato esperado)
+  String timeRange = "";
+  String ponente = "";
+  
+  if (appointment.notes != null && appointment.notes!.isNotEmpty) {
+    final parts = appointment.notes!.split('|');
+    if (parts.length > 1) {
+      timeRange = parts[0].trim();
+      ponente = parts[1].trim();
+    } else {
+      ponente = appointment.notes!;
+    }
+  }
   
   return Container(
     margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -650,41 +658,33 @@ Widget _buildAppointmentWidget(BuildContext context, CalendarAppointmentDetails 
             ),
           ),
         ),
-        // Bloque de hora
+        // Bloque de hora (ahora usando el timeRange extraído)
         Container(
-          width: 70,
+          width: 80, // Aumentado de 70 a 80 para dar más espacio
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "$startHour:$startMinute",
+                timeRange.isNotEmpty ? timeRange : "${appointment.startTime.hour.toString().padLeft(2, '0')}:${appointment.startTime.minute.toString().padLeft(2, '0')} - ${appointment.endTime.hour.toString().padLeft(2, '0')}:${appointment.endTime.minute.toString().padLeft(2, '0')}",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 14,
+                  fontSize: 13,
                   color: MedicalTheme.primaryColor,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                "$endHour:$endMinute",
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
                 ),
               ),
             ],
           ),
         ),
-        // Contenido principal - Ahora más destacado
+        // Contenido principal
         Expanded(
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Nombre de la actividad con estilo más prominente
+                // Nombre de la actividad
                 Text(
                   appointment.subject,
                   style: TextStyle(
@@ -696,7 +696,8 @@ Widget _buildAppointmentWidget(BuildContext context, CalendarAppointmentDetails 
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
-                if (appointment.notes != null && appointment.notes!.isNotEmpty)
+                // Ponente
+                if (ponente.isNotEmpty)
                   Row(
                     children: [
                       Icon(
@@ -707,7 +708,7 @@ Widget _buildAppointmentWidget(BuildContext context, CalendarAppointmentDetails 
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          appointment.notes!,
+                          ponente,
                           style: TextStyle(
                             fontSize: 12,
                             color: MedicalTheme.primaryColor,
@@ -719,6 +720,7 @@ Widget _buildAppointmentWidget(BuildContext context, CalendarAppointmentDetails 
                       ),
                     ],
                   ),
+                // Ubicación
                 if (appointment.location != null && appointment.location!.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 3),
