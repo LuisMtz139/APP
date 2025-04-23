@@ -456,66 +456,66 @@ void _showEventsModal(BuildContext context) {
                       
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: SfCalendar(
-                          controller: calendarController,
-                          dataSource: AppointmentDataSource(appointments),
-                          todayHighlightColor: MedicalTheme.primaryColor,
-                          selectionDecoration: BoxDecoration(
-                            color: MedicalTheme.primaryColor.withOpacity(0.2),
-                            border: Border.all(
-                              color: MedicalTheme.primaryColor,
-                              width: 1.5,
-                            ),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          headerStyle: CalendarHeaderStyle(
-                            textAlign: TextAlign.center,
-                            textStyle: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: MedicalTheme.textPrimaryColor,
-                            ),
-                          ),
-                          viewHeaderStyle: ViewHeaderStyle(
-                            backgroundColor: MedicalTheme.surfaceColor.withOpacity(0.3),
-                            dayTextStyle: TextStyle(
-                              color: MedicalTheme.textSecondaryColor,
-                              fontSize: 12,
-                            ),
-                            dateTextStyle: TextStyle(
-                              color: MedicalTheme.textPrimaryColor,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          monthViewSettings: MonthViewSettings(
-                            showAgenda: true,
-                            agendaViewHeight: 200,
-                            appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
-                            agendaItemHeight: 70,  // Aumentado para dar más espacio a la información
-                            appointmentDisplayCount: 2,  // Mostrar más citas si hay varias el mismo día
-                          ),
-                          // Aquí están los constructores personalizados para las citas
-                          appointmentBuilder: _buildAppointmentWidget,
-                          scheduleViewSettings: ScheduleViewSettings(
-                            appointmentItemHeight: 70,
-                            hideEmptyScheduleWeek: true,
-                          ),
-                          showNavigationArrow: true,
-                          viewNavigationMode: ViewNavigationMode.snap,
-                          showDatePickerButton: true,
-                          showCurrentTimeIndicator: true,
-                          appointmentTimeTextFormat: 'HH:mm',
-                          // Aquí es donde asignamos el constructor personalizado para la agenda
-                          timeSlotViewSettings: TimeSlotViewSettings(
-                            timeFormat: 'HH:mm',
-                            timeTextStyle: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.normal,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ),
+                        child: 
+// Actualiza la configuración del calendario para dar más espacio a las citas
+SfCalendar(
+  controller: calendarController,
+  dataSource: AppointmentDataSource(appointments),
+  todayHighlightColor: MedicalTheme.primaryColor,
+  selectionDecoration: BoxDecoration(
+    color: MedicalTheme.primaryColor.withOpacity(0.2),
+    border: Border.all(
+      color: MedicalTheme.primaryColor,
+      width: 1.5,
+    ),
+    borderRadius: BorderRadius.circular(4),
+  ),
+  headerStyle: CalendarHeaderStyle(
+    textAlign: TextAlign.center,
+    textStyle: TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.bold,
+      color: MedicalTheme.textPrimaryColor,
+    ),
+  ),
+  viewHeaderStyle: ViewHeaderStyle(
+    backgroundColor: MedicalTheme.surfaceColor.withOpacity(0.3),
+    dayTextStyle: TextStyle(
+      color: MedicalTheme.textSecondaryColor,
+      fontSize: 12,
+    ),
+    dateTextStyle: TextStyle(
+      color: MedicalTheme.textPrimaryColor,
+      fontSize: 14,
+      fontWeight: FontWeight.bold,
+    ),
+  ),
+  monthViewSettings: MonthViewSettings(
+    showAgenda: true,
+    agendaViewHeight: 220, // Aumentado de 200 a 220
+    appointmentDisplayMode: MonthAppointmentDisplayMode.indicator, // Cambiado a indicator para evitar desbordamientos
+    agendaItemHeight: 70,
+    appointmentDisplayCount: 1, // Reducido de 2 a 1 para evitar desbordamientos
+  ),
+  appointmentBuilder: _buildAppointmentWidget,
+  scheduleViewSettings: ScheduleViewSettings(
+    appointmentItemHeight: 70,
+    hideEmptyScheduleWeek: true,
+  ),
+  showNavigationArrow: true,
+  viewNavigationMode: ViewNavigationMode.snap,
+  showDatePickerButton: true,
+  showCurrentTimeIndicator: true,
+  appointmentTimeTextFormat: 'HH:mm',
+  timeSlotViewSettings: TimeSlotViewSettings(
+    timeFormat: 'HH:mm',
+    timeTextStyle: TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.normal,
+      color: Colors.grey[600],
+    ),
+  ),
+),
                       );
                     }),
                   ),
@@ -553,9 +553,13 @@ void _showEventsModal(BuildContext context) {
 }
 
 
-  
-  Widget _buildAppointmentWidget(BuildContext context, CalendarAppointmentDetails details) {
+  // Actualiza el método _buildAppointmentWidget para manejar mejor el espacio
+Widget _buildAppointmentWidget(BuildContext context, CalendarAppointmentDetails details) {
   final Appointment appointment = details.appointments.first;
+  
+  // Verificamos si estamos en un espacio muy pequeño
+  final bool isSmallSpace = details.bounds.width < 50 || details.bounds.height < 30;
+  
   return Container(
     decoration: BoxDecoration(
       gradient: LinearGradient(
@@ -565,34 +569,51 @@ void _showEventsModal(BuildContext context) {
       ),
       borderRadius: BorderRadius.circular(6),
     ),
-    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          appointment.subject,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-          ),
-          overflow: TextOverflow.ellipsis,
-          maxLines: 1,
-        ),
-        if (appointment.notes != null && appointment.notes!.isNotEmpty)
-          Text(
-            appointment.notes!,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 10,
+    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+    child: isSmallSpace 
+      // Si el espacio es muy pequeño, solo mostramos un indicador
+      ? Center(
+          child: Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
             ),
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
           ),
-      ],
-    ),
+        )
+      // Si hay espacio suficiente, mostramos el contenido
+      : Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min, // Importante: minimiza el tamaño vertical
+          children: [
+            Text(
+              appointment.subject,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12, // Reducido de 13 a 12
+                fontWeight: FontWeight.bold,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+            if (appointment.notes != null && 
+                appointment.notes!.isNotEmpty &&
+                details.bounds.height > 40) // Solo mostrar ponente si hay suficiente espacio
+              Text(
+                appointment.notes!,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 10,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+          ],
+        ),
   );
 }
+
   // Constructor personalizado para citas en la vista de agenda
  Widget _buildAgendaAppointmentWidget(BuildContext context, CalendarAppointmentDetails details) {
   final Appointment appointment = details.appointments.first;
