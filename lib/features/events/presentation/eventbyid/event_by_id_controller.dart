@@ -13,24 +13,25 @@ import 'package:url_launcher/url_launcher.dart';
 
 class EventByIdController extends GetxController {
   final EventByIdUsecase eventByIdUsecase;
-  final UserDataUsecase userDataUsecase; 
+  final UserDataUsecase userDataUsecase;
   final RxBool showAllPrices = false.obs;
   final RegisterEventUsecase registerEventUsecase;
   final RxBool isRegistering = false.obs;
-  
+
   EventByIdController({
     required this.eventByIdUsecase,
     required this.userDataUsecase,
     required this.registerEventUsecase,
   });
-  
-  final DashboardsController dashboardsController = Get.find<DashboardsController>();
+
+  final DashboardsController dashboardsController =
+      Get.find<DashboardsController>();
 
   final Rx<EventsEntity?> event = Rx<EventsEntity?>(null);
   final RxBool isLoading = true.obs;
   final RxBool hasError = false.obs;
   final RxString errorMessage = ''.obs;
-  
+
   final RxList<UserDataEntity> userData = <UserDataEntity>[].obs;
   final RxString membresiaNombre = 'Cargando...'.obs;
   final RxBool isLoadingMembership = true.obs;
@@ -38,10 +39,12 @@ class EventByIdController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    
+
     fetchUserData();
-    
-    if (Get.arguments != null && Get.arguments is Map && Get.arguments.containsKey('eventId')) {
+
+    if (Get.arguments != null &&
+        Get.arguments is Map &&
+        Get.arguments.containsKey('eventId')) {
       final String eventId = Get.arguments['eventId'] as String;
       loadEvent(eventId);
     } else {
@@ -54,12 +57,11 @@ class EventByIdController extends GetxController {
   Future<void> fetchUserData() async {
     try {
       isLoadingMembership.value = true;
-      
+
       final userDataList = await userDataUsecase.execute();
       userData.value = userDataList;
-      
+
       _processUserData();
-      
     } catch (e) {
       print('Error al cargar datos de usuario: ${e.toString()}');
       membresiaNombre.value = 'No disponible';
@@ -67,43 +69,45 @@ class EventByIdController extends GetxController {
       isLoadingMembership.value = false;
     }
   }
-void printEventActivities() {
-  if (event.value == null) {
-    print('No hay evento cargado.');
-    return;
-  }
-  final activities = event.value!.activities;
-  if (activities.isEmpty) {
-    print('El evento no tiene actividades registradas.');
-    return;
-  }
-  print('Actividades del evento "${event.value!.titulo}":');
-  for (final actividad in activities) {
-    print('- Día: ${actividad.dia}, ${actividad.horaInicio.substring(0,5)}-${actividad.horaFin.substring(0,5)}');
-    print('  Nombre: ${actividad.nombreActividad}');
-    print('  Ponente: ${actividad.ponente}');
-    print('  Ubicación: ${actividad.ubicacionActividad.isEmpty ? "N/A" : actividad.ubicacionActividad}');
-    print('');
-  }
-}
 
-void printEventPrices() {
-  if (event.value == null) {
-    print('No hay evento cargado.');
-    return;
+  void printEventActivities() {
+    if (event.value == null) {
+      print('No hay evento cargado.');
+      return;
+    }
+    final activities = event.value!.activities;
+    if (activities.isEmpty) {
+      print('El evento no tiene actividades registradas.');
+      return;
+    }
+    print('Actividades del evento "${event.value!.titulo}":');
+    for (final actividad in activities) {
+      print(
+          '- Día: ${actividad.dia}, ${actividad.horaInicio.substring(0, 5)}-${actividad.horaFin.substring(0, 5)}');
+      print('  Nombre: ${actividad.nombreActividad}');
+      print('  Ponente: ${actividad.ponente}');
+      print(
+          '  Ubicación: ${actividad.ubicacionActividad.isEmpty ? "N/A" : actividad.ubicacionActividad}');
+      print('');
+    }
   }
-  final prices = getPricesMap();
-  if (prices.isEmpty) {
-    print('No hay precios disponibles para este evento.');
-    return;
+
+  void printEventPrices() {
+    if (event.value == null) {
+      print('No hay evento cargado.');
+      return;
+    }
+    final prices = getPricesMap();
+    if (prices.isEmpty) {
+      print('No hay precios disponibles para este evento.');
+      return;
+    }
+    final moneda = event.value!.monedaPrecios;
+    print('Costos del evento "${event.value!.titulo}":');
+    prices.forEach((membresia, precio) {
+      print('- $membresia: $moneda $precio');
+    });
   }
-  final moneda = event.value!.monedaPrecios;
-  print('Costos del evento "${event.value!.titulo}":');
-  prices.forEach((membresia, precio) {
-    print('- $membresia: $moneda $precio');
-  });
-}
-  
 
   void _processUserData() {
     if (userData.isEmpty) {
@@ -112,13 +116,12 @@ void printEventPrices() {
     }
 
     final user = userData.first;
-    
+
     if (user.nombreMembresia.isNotEmpty) {
       membresiaNombre.value = user.nombreMembresia;
     } else {
       membresiaNombre.value = 'No disponible';
     }
-    
   }
 
   Future<void> loadEvent(String id) async {
@@ -130,12 +133,12 @@ void printEventPrices() {
       print('Cargando evento con ID: $id');
 
       final List<EventsEntity> events = await eventByIdUsecase.execute(id);
-      
+
       if (events.isNotEmpty) {
         event.value = events.first;
         print('Evento cargado exitosamente: ${event.value!.titulo}');
         printEventActivities(); // <-- Aquí imprime actividades al cargar el evento
-        printEventPrices();     // <-- Aquí imprime precios al cargar el evento
+        printEventPrices(); // <-- Aquí imprime precios al cargar el evento
       } else {
         hasError.value = true;
         errorMessage.value = 'No se encontró el evento';
@@ -169,10 +172,10 @@ void printEventPrices() {
 
   String getDurationText() {
     if (event.value == null) return '';
-    
+
     final String startDate = formatDate(event.value!.fechaInicio);
     final String endDate = formatDate(event.value!.fechaFin);
-    
+
     if (startDate == endDate) {
       return startDate;
     } else {
@@ -221,16 +224,15 @@ void printEventPrices() {
     };
 
     // Filtrar precios nulos o vacíos
-    return Map.fromEntries(
-      prices.entries.where((entry) => entry.value != null && entry.value!.isNotEmpty)
-    );
+    return Map.fromEntries(prices.entries
+        .where((entry) => entry.value != null && entry.value!.isNotEmpty));
   }
 
   String getRegistrationLimit() {
     if (event.value == null || event.value!.fechaLimiteRegistro == null) {
       return 'No especificada';
     }
-    
+
     return formatDate(event.value!.fechaLimiteRegistro!);
   }
 
@@ -238,38 +240,37 @@ void printEventPrices() {
     if (event.value == null || event.value!.limiteUsuarios == null) {
       return 'Cupos ilimitados';
     }
-    
+
     final int total = event.value!.limiteUsuarios!;
     final int registered = event.value!.usuariosInscritos;
     final int available = total - registered;
-    
+
     return '$available / $total ';
-  }  
-  
+  }
+
   Future<void> registerToEvent(BuildContext context) async {
     if (event.value == null) return;
-    
+
     try {
       isRegistering.value = true;
-      
+
       await registerEventUsecase.execute(event.value!.id.toString());
-      
+
       // Actualizar el estado de inscripción
       if (event.value != null) {
         // Cargar el evento de nuevo para obtener el estado actualizado
         await loadEvent(event.value!.id.toString());
       }
-      
+
       dashboardsController.fetchEvents();
       dashboardsController.fetchUserDebts();
       dashboardsController.fetchUserData();
-      
+
       // Mostrar el nuevo diálogo personalizado en lugar del QuickAlert
       showSuccessRegistrationDialog(context);
-      
     } catch (e) {
       print('Error al registrarse al evento: $e');
-      
+
       QuickAlert.show(
         context: context,
         type: QuickAlertType.error,
@@ -282,7 +283,7 @@ void printEventPrices() {
       isRegistering.value = false;
     }
   }
-  
+
   // Método para mostrar el diálogo de inscripción exitosa con opciones
   void showSuccessRegistrationDialog(BuildContext context) {
     Get.dialog(
@@ -379,30 +380,33 @@ void printEventPrices() {
       barrierDismissible: false,
     );
   }
-  
-void _launchPaymentURL() async {
-  final Uri url = Uri.parse('https://www.amce.org.mx/asociados');
-  try {
-    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+
+  Future<void> _launchPaymentURL() async {
+    final Uri url = Uri.parse('https://www.amce.org.mx/asociados');
+    try {
+      // Changed from LaunchMode.externalApplication to platformDefault
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url);
+      } else {
+        Get.snackbar(
+          'Error',
+          'No se pudo abrir el enlace de pago',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red[100],
+          colorText: Colors.red[800],
+        );
+      }
+    } catch (e) {
       Get.snackbar(
         'Error',
-        'No se pudo abrir el enlace de pago',
+        'Ocurrió un problema al intentar abrir el enlace: ${e.toString()}',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red[100],
         colorText: Colors.red[800],
       );
     }
-  } catch (e) {
-    Get.snackbar(
-      'Error',
-      'Ocurrió un problema al intentar abrir el enlace: ${e.toString()}',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.red[100],
-      colorText: Colors.red[800],
-    );
   }
-}
-  
+
   bool isUserAlreadyRegistered() {
     // Verifica si el usuario ya está inscrito usando la propiedad isInEvent del evento
     if (event.value != null && event.value!.isInEvent != null) {
