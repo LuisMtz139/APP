@@ -230,7 +230,6 @@ Widget _buildDateFilterChip(String label, bool isSelected) {
               _buildDateFilterChip('Hoy', controller.selectedDateFilter.value == 'Hoy'),
               _buildDateFilterChip('Mañana', controller.selectedDateFilter.value == 'Mañana'),
               _buildDateFilterChip('Esta semana', controller.selectedDateFilter.value == 'Esta semana'),
-              _buildDateFilterChip('Este mes', controller.selectedDateFilter.value == 'Este mes'),
               _buildDateFilterChip('Fecha específica', controller.selectedDateFilter.value == 'Fecha específica'),
             ],
           )),
@@ -333,16 +332,17 @@ List<Appointment> _getActivitiesAsAppointments() {
         endMinute
       );
       
-      // Crear appointment con los datos de la actividad
-      // CAMBIO AQUÍ: Usar MedicalTheme.primaryColor en lugar del color del evento
+      // Combinar título del evento y nombre de actividad para mostrarlo
+      final combinedSubject = "${event.titulo} - ${activity.nombreActividad}";
+      
       appointments.add(
         Appointment(
           startTime: startTime,
           endTime: endTime,
-          subject: activity.nombreActividad,
+          subject: combinedSubject, // Ahora mostrará el título del evento y el nombre de la actividad
           location: activity.ubicacionActividad,
-          notes: activity.ponente, // Usar notes para guardar el ponente
-          color: MedicalTheme.secondaryColor, // Aquí está el cambio principal
+          notes: activity.ponente,
+          color: MedicalTheme.secondaryColor,
           isAllDay: false,
         ),
       );
@@ -353,47 +353,45 @@ List<Appointment> _getActivitiesAsAppointments() {
 }
 
   
-  // Constructor personalizado para las citas en el calendario
   Widget _buildAppointmentWidget(BuildContext context, CalendarAppointmentDetails details) {
-    final Appointment appointment = details.appointments.first;
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [appointment.color.withOpacity(0.85), appointment.color],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(6),
+  final Appointment appointment = details.appointments.first;
+  return Container(
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        colors: [appointment.color.withOpacity(0.85), appointment.color],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      borderRadius: BorderRadius.circular(6),
+    ),
+    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          appointment.subject,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+          ),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
+        if (appointment.notes != null && appointment.notes!.isNotEmpty)
           Text(
-            appointment.subject,
+            appointment.notes!,
             style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
+              color: Colors.white70,
+              fontSize: 10,
             ),
             overflow: TextOverflow.ellipsis,
             maxLines: 1,
           ),
-          if (appointment.notes != null && appointment.notes!.isNotEmpty)
-            Text(
-              appointment.notes!,
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 10,
-              ),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-            ),
-        ],
-      ),
-    );
-  }
-
+      ],
+    ),
+  );
+}
   // Constructor personalizado para citas en la vista de agenda
  Widget _buildAgendaAppointmentWidget(BuildContext context, CalendarAppointmentDetails details) {
   final Appointment appointment = details.appointments.first;
@@ -420,7 +418,6 @@ List<Appointment> _getActivitiesAsAppointments() {
     child: Row(
       children: [
         // Barra de color vertical que indica el tipo de evento
-        // ACTUALIZADO: Usar MedicalTheme.primaryColor
         Container(
           width: 6,
           decoration: BoxDecoration(
@@ -458,38 +455,65 @@ List<Appointment> _getActivitiesAsAppointments() {
             ],
           ),
         ),
-          // Contenido principal
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    appointment.subject,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+        // Contenido principal - Ahora más destacado
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Nombre de la actividad con estilo más prominente
+                Text(
+                  appointment.subject,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: MedicalTheme.textPrimaryColor,
                   ),
-                  const SizedBox(height: 3),
-                  if (appointment.notes != null && appointment.notes!.isNotEmpty)
-                    Row(
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                if (appointment.notes != null && appointment.notes!.isNotEmpty)
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.person,
+                        size: 12,
+                        color: MedicalTheme.primaryColor,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          appointment.notes!,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: MedicalTheme.primaryColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                if (appointment.location != null && appointment.location!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 3),
+                    child: Row(
                       children: [
                         Icon(
-                          Icons.person,
+                          Icons.location_on,
                           size: 12,
-                          color:MedicalTheme.primaryColor,
+                          color: MedicalTheme.primaryColor,
                         ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
-                            appointment.notes!,
+                            appointment.location!,
                             style: TextStyle(
                               fontSize: 12,
-                              color:MedicalTheme.primaryColor,
+                              color: MedicalTheme.primaryColor,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -497,41 +521,81 @@ List<Appointment> _getActivitiesAsAppointments() {
                         ),
                       ],
                     ),
-                  if (appointment.location != null && appointment.location!.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 3),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.location_on,
-                            size: 12,
-                            color: MedicalTheme.primaryColor,
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              appointment.location!,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: MedicalTheme.primaryColor,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
+                  ),
+              ],
             ),
           ),
-        ],
-      ),
-    );
+        ),
+      ],
+    ),
+  );
+}
+void _showEventsModal(BuildContext context) {
+  final screenHeight = MediaQuery.of(context).size.height;
+  final screenWidth = MediaQuery.of(context).size.width;
+  final bottomPadding = MediaQuery.of(context).padding.bottom;
+  final topPadding = MediaQuery.of(context).padding.top;
+  
+  // Convertir actividades de eventos a appointments para el calendario
+  List<Appointment> _getActivitiesAsAppointments() {
+    List<Appointment> appointments = [];
+    
+    // Solo procesar eventos que tienen actividades
+    final eventsWithActivities = controller.events.where((event) => 
+      event.activities != null && event.activities.isNotEmpty
+    ).toList();
+    
+    for (var event in eventsWithActivities) {
+      for (var activity in event.activities) {
+        // Convertir strings de fechas y horas a DateTime
+        final activityDate = DateTime.parse(activity.dia);
+        
+        // Parsear hora de inicio (formato HH:MM:SS)
+        final startTimeParts = activity.horaInicio.split(':');
+        final startHour = int.parse(startTimeParts[0]);
+        final startMinute = int.parse(startTimeParts[1]);
+        
+        // Parsear hora de fin
+        final endTimeParts = activity.horaFin.split(':');
+        final endHour = int.parse(endTimeParts[0]);
+        final endMinute = int.parse(endTimeParts[1]);
+        
+        // Crear fechas completas con hora de inicio y fin
+        final startTime = DateTime(
+          activityDate.year, 
+          activityDate.month, 
+          activityDate.day, 
+          startHour, 
+          startMinute
+        );
+        
+        final endTime = DateTime(
+          activityDate.year, 
+          activityDate.month, 
+          activityDate.day, 
+          endHour, 
+          endMinute
+        );
+        
+        // Crear appointment con los datos de la actividad
+        appointments.add(
+          Appointment(
+            startTime: startTime,
+            endTime: endTime,
+            subject: activity.nombreActividad,
+            location: activity.ubicacionActividad,
+            notes: activity.ponente, // Usar notes para guardar el ponente
+            color: MedicalTheme.secondaryColor,
+            isAllDay: false,
+          ),
+        );
+      }
+    }
+    
+    return appointments;
   }
 
- showModalBottomSheet(
+  showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
@@ -542,9 +606,7 @@ List<Appointment> _getActivitiesAsAppointments() {
           calendarController.view = CalendarView.month;
           
           return Container(
-            // Ajustar la altura para evitar desbordamiento
             height: screenHeight * 0.8,
-            // Asegurar que el contenedor no exceda los límites de la pantalla
             width: screenWidth,
             decoration: BoxDecoration(
               color: MedicalTheme.cardColor,
@@ -560,7 +622,6 @@ List<Appointment> _getActivitiesAsAppointments() {
                 ),
               ],
             ),
-            // Usar ClipRRect para asegurar que nada se desborde fuera del contenedor
             child: ClipRRect(
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(20),
@@ -581,7 +642,6 @@ List<Appointment> _getActivitiesAsAppointments() {
                   
                   // Título con botones de cambio de vista
                   Padding(
-                    // Reducir márgenes horizontales para evitar desbordamiento
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -589,12 +649,11 @@ List<Appointment> _getActivitiesAsAppointments() {
                         Text(
                           'Calendario de Actividades',
                           style: TextStyle(
-                            fontSize: 18, // Reducido de 20 a 18
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: MedicalTheme.textPrimaryColor,
                           ),
                         ),
-                        // Se eliminaron los botones de cambio de vista para simplificar
                       ],
                     ),
                   ),
@@ -641,7 +700,6 @@ List<Appointment> _getActivitiesAsAppointments() {
                       final appointments = _getActivitiesAsAppointments();
                       
                       return Padding(
-                        // Reducir el padding horizontal para evitar desbordamiento
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: SfCalendar(
                           controller: calendarController,
@@ -655,7 +713,6 @@ List<Appointment> _getActivitiesAsAppointments() {
                             ),
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          // Otros parámetros mantenidos
                           headerStyle: CalendarHeaderStyle(
                             textAlign: TextAlign.center,
                             textStyle: TextStyle(
@@ -677,44 +734,59 @@ List<Appointment> _getActivitiesAsAppointments() {
                             ),
                           ),
                           monthViewSettings: MonthViewSettings(
-                            // Reducir la altura de la vista de agenda para evitar desbordamiento
                             showAgenda: true,
-                            agendaViewHeight: 200, // Reducido para evitar desbordamiento
+                            agendaViewHeight: 200,
                             appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
-                            agendaItemHeight: 65, // Reducido para evitar desbordamiento
+                            agendaItemHeight: 70,  // Aumentado para dar más espacio a la información
+                            appointmentDisplayCount: 2,  // Mostrar más citas si hay varias el mismo día
+                          ),
+                          // Aquí están los constructores personalizados para las citas
+                          appointmentBuilder: _buildAppointmentWidget,
+                          scheduleViewSettings: ScheduleViewSettings(
+                            appointmentItemHeight: 70,
+                            hideEmptyScheduleWeek: true,
                           ),
                           showNavigationArrow: true,
                           viewNavigationMode: ViewNavigationMode.snap,
                           showDatePickerButton: true,
                           showCurrentTimeIndicator: true,
+                          appointmentTimeTextFormat: 'HH:mm',
+                          // Aquí es donde asignamos el constructor personalizado para la agenda
+                          timeSlotViewSettings: TimeSlotViewSettings(
+                            timeFormat: 'HH:mm',
+                            timeTextStyle: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.normal,
+                              color: Colors.grey[600],
+                            ),
+                          ),
                         ),
                       );
                     }),
                   ),
                   
                   // Botón para cerrar
-                 Container(
-  width: double.infinity,
-  // Usa MediaQuery para obtener la altura de la barra de navegación
-  padding: EdgeInsets.fromLTRB(
-    16, 
-    8, 
-    16, 
-    8 + MediaQuery.of(context).viewPadding.bottom
-  ),
-  child: ElevatedButton(
-    onPressed: () => Navigator.pop(context),
-    style: ElevatedButton.styleFrom(
-      backgroundColor: MedicalTheme.primaryColor,
-      foregroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 12),
-    ),
-    child: Text('Cerrar'),
-  ),
-),
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.fromLTRB(
+                      16, 
+                      8, 
+                      16, 
+                      8 + MediaQuery.of(context).viewPadding.bottom
+                    ),
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: MedicalTheme.primaryColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: Text('Cerrar'),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -723,6 +795,7 @@ List<Appointment> _getActivitiesAsAppointments() {
       );
     },
   );
+}
 }
   Widget _buildEventCard(EventsEntity event) {
     return GestureDetector(

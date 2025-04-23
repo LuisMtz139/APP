@@ -52,8 +52,8 @@ dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path_android: "assets/AMCE.png"
-  image_path_ios: "assets/icono.jpeg" # Versión sin transparencia
+  image_path_android: "assets/AMCE-logo.jpg"
+  image_path_ios: "assets/AMCE-logo.jpg" # Versión sin transparencia
   adaptive_icon_background: "#FFFFFF"
   adaptive_icon_foreground: "assets/icono.jpeg"
 dev_dependencies:
