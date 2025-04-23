@@ -27,6 +27,12 @@ class DashboardsController extends GetxController {
   final RxString totalAdeudos = '0'.obs;
   final RxDouble montoTotalPendiente = 0.0.obs;
   final RxList<EventsEntity> events = <EventsEntity>[].obs;
+  
+  // Propiedades para filtros de categoría y fecha
+  final selectedCategory = 'Todos'.obs;
+  final selectedDateFilter = 'Todos'.obs;
+  final Rx<DateTime?> specificDate = Rx<DateTime?>(null);
+  final specificDateFormatted = ''.obs;
 
   DashboardsController({
     required UserDebtsUsecase userDebtsUsecase,
@@ -57,11 +63,127 @@ class DashboardsController extends GetxController {
       }
       
       events.assignAll(eventsList);
+      // Aplica los filtros iniciales después de cargar los eventos
+      applyAllFilters();
       isLoading.value = false;
     } catch (e) {
       print('Error al cargar eventos: $e');
       isLoading.value = false;
+    }
+  }
+
+  // Método para cambiar filtro de categoría
+  void changeCategory(String category) {
+    selectedCategory.value = category;
+    applyAllFilters();
+  }
+  
+  // Método para cambiar filtro de fecha
+  void changeDateFilter(String filter) {
+    selectedDateFilter.value = filter;
     
+    // Si se deselecciona "Fecha específica", limpiamos la fecha específica
+    if (filter != 'Fecha específica') {
+      specificDate.value = null;
+      specificDateFormatted.value = '';
+    }
+    
+    // Aplicar filtros
+    applyAllFilters();
+  }
+
+  // Método para establecer fecha específica
+  void setSpecificDate(DateTime date) {
+    specificDate.value = date;
+    
+    // Formatear la fecha para mostrarla
+    final months = [
+      '', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+      'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
+    ];
+    specificDateFormatted.value = "${date.day} ${months[date.month]}, ${date.year}";
+    
+    // Aplicar filtros
+    applyAllFilters();
+  }
+  
+  // Método para aplicar todos los filtros (categoría y fecha)
+  void applyAllFilters() {
+    // Primero filtramos por categoría
+    List<EventsEntity> tempEvents = [];
+    
+    if (selectedCategory.value == 'Todos') {
+      // Mostrar todos los eventos
+      tempEvents = events.toList();
+    } else if (selectedCategory.value == 'Congresos') {
+      // Filtrar solo congresos
+      tempEvents = events.where((e) => 
+        e.tipoEvento.toLowerCase() == 'congreso'
+      ).toList();
+    } else if (selectedCategory.value == 'Cursos') {
+      // Filtrar solo cursos
+      tempEvents = events.where((e) => 
+        e.tipoEvento.toLowerCase() == 'curso'
+      ).toList();
+    }
+    
+    // Luego aplicamos el filtro de fecha sobre los resultados anteriores
+    if (selectedDateFilter.value == 'Todos') {
+      // No aplicamos filtro adicional
+      filteredEvents.assignAll(tempEvents);
+    } else if (selectedDateFilter.value == 'Hoy') {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      
+      filteredEvents.assignAll(tempEvents.where((e) {
+        final eventDate = DateTime.parse(e.fechaInicio);
+        return eventDate.year == today.year && 
+               eventDate.month == today.month && 
+               eventDate.day == today.day;
+      }).toList());
+    } else if (selectedDateFilter.value == 'Mañana') {
+      final now = DateTime.now();
+      final tomorrow = DateTime(now.year, now.month, now.day + 1);
+      
+      filteredEvents.assignAll(tempEvents.where((e) {
+        final eventDate = DateTime.parse(e.fechaInicio);
+        return eventDate.year == tomorrow.year && 
+               eventDate.month == tomorrow.month && 
+               eventDate.day == tomorrow.day;
+      }).toList());
+    } else if (selectedDateFilter.value == 'Esta semana') {
+      final now = DateTime.now();
+      final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+      final startDate = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
+      final endDate = startDate.add(Duration(days: 7));
+      
+      filteredEvents.assignAll(tempEvents.where((e) {
+        final eventDate = DateTime.parse(e.fechaInicio);
+        return eventDate.isAfter(startDate.subtract(Duration(days: 1))) && 
+               eventDate.isBefore(endDate);
+      }).toList());
+    } else if (selectedDateFilter.value == 'Este mes') {
+      final now = DateTime.now();
+      final startDate = DateTime(now.year, now.month, 1);
+      final endDate = (now.month < 12) 
+          ? DateTime(now.year, now.month + 1, 1)
+          : DateTime(now.year + 1, 1, 1);
+      
+      filteredEvents.assignAll(tempEvents.where((e) {
+        final eventDate = DateTime.parse(e.fechaInicio);
+        return eventDate.isAfter(startDate.subtract(Duration(days: 1))) && 
+               eventDate.isBefore(endDate);
+      }).toList());
+    } else if (selectedDateFilter.value == 'Fecha específica' && specificDate.value != null) {
+      final selectedDate = specificDate.value!;
+      final dayStart = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
+      final dayEnd = dayStart.add(Duration(days: 1));
+      
+      filteredEvents.assignAll(tempEvents.where((e) {
+        final eventDate = DateTime.parse(e.fechaInicio);
+        return eventDate.isAfter(dayStart.subtract(Duration(seconds: 1))) && 
+               eventDate.isBefore(dayEnd);
+      }).toList());
     }
   }
 
@@ -77,8 +199,9 @@ class DashboardsController extends GetxController {
     }
   }
 
+  // Getter para eventos destacados (ahora utiliza los eventos filtrados)
   List<EventsEntity> get featuredEvents {
-    return events; // Sin filtro, muestra todos los eventos
+    return filteredEvents;
   }
 
   // Método para obtener los colores del gradiente basado en el tipo de evento
@@ -93,38 +216,36 @@ class DashboardsController extends GetxController {
     }
   }
 
-Future<void> fetchUserData() async {
-  try {
-    final userDataList = await _userDataUsecase.execute();
+  Future<void> fetchUserData() async {
+    try {
+      final userDataList = await _userDataUsecase.execute();
 
-    if (userDataList.isNotEmpty) {
-      userData.value = userDataList.first;
-      userName.value = "${userData.value!.nombre} ${userData.value!.apellidoPaterno}";
-      membresiaEstatus.value = userData.value!.estatus ?? 'No disponible';
-      membresiaNombre.value = userData.value!.nombreMembresia ?? 'No especificada';
+      if (userDataList.isNotEmpty) {
+        userData.value = userDataList.first;
+        userName.value = "${userData.value!.nombre} ${userData.value!.apellidoPaterno}";
+        membresiaEstatus.value = userData.value!.estatus ?? 'No disponible';
+        membresiaNombre.value = userData.value!.nombreMembresia ?? 'No especificada';
 
-      final createdDate = DateTime.tryParse(userData.value!.creadoEl ?? '');
-      if (createdDate != null) {
-        final startYear = createdDate.year;
-        final endYear = startYear + 1;
-        creadoEl.value = "$startYear - $endYear";
+        final createdDate = DateTime.tryParse(userData.value!.creadoEl ?? '');
+        if (createdDate != null) {
+          final startYear = createdDate.year;
+          final endYear = startYear + 1;
+          creadoEl.value = "$startYear - $endYear";
+        } else {
+          creadoEl.value = "No disponible";
+        }
       } else {
-        creadoEl.value = "No disponible";
+        userName.value = "Usuario";
+        membresiaNombre.value = "No disponible";
+        membresiaEstatus.value = "No disponible";
       }
-    } else {
+    } catch (e) {
+      print('Error en fetchUserData: ${e.toString()}');
       userName.value = "Usuario";
       membresiaNombre.value = "No disponible";
       membresiaEstatus.value = "No disponible";
     }
-  } catch (e) {
-    print('Error en fetchUserData: ${e.toString()}');
-    userName.value = "Usuario";
-    membresiaNombre.value = "No disponible";
-    membresiaEstatus.value = "No disponible";
   }
-}
-
-
 
   Future<void> fetchUserDebts() async {
     try {
@@ -140,31 +261,31 @@ Future<void> fetchUserData() async {
       isLoading.value = false;
     }
   }
-void _processDebtsData() {
-  if (userDebts.isEmpty) {
-    membresiaEstatus.value = 'No disponible';
-    totalAdeudos.value = '0';
-    montoTotalPendiente.value = 0.0;
-    return;
+
+  void _processDebtsData() {
+    if (userDebts.isEmpty) {
+      membresiaEstatus.value = 'No disponible';
+      totalAdeudos.value = '0';
+      montoTotalPendiente.value = 0.0;
+      return;
+    }
+
+    final pendingDebts = userDebts.where(
+      (debt) => debt.estatus.toLowerCase() == 'pendiente',
+    ).toList();
+
+    totalAdeudos.value = pendingDebts.length.toString();
+
+    const tasaUSD = 21.0;
+
+    montoTotalPendiente.value = pendingDebts.fold(0.0, (prev, debt) {
+      final monto = double.tryParse(debt.monto) ?? 0.0;
+      final pagado = double.tryParse(debt.cantidadPagada) ?? 0.0;
+      final restante = monto - pagado;
+      final convertido = (debt.moneda?.toUpperCase() == 'USD') ? restante * tasaUSD : restante;
+      return prev + convertido;
+    });
   }
-
-  final pendingDebts = userDebts.where(
-    (debt) => debt.estatus.toLowerCase() == 'pendiente',
-  ).toList();
-
-  totalAdeudos.value = pendingDebts.length.toString();
-
-  const tasaUSD = 21.0;
-
-  montoTotalPendiente.value = pendingDebts.fold(0.0, (prev, debt) {
-    final monto = double.tryParse(debt.monto) ?? 0.0;
-    final pagado = double.tryParse(debt.cantidadPagada) ?? 0.0;
-    final restante = monto - pagado;
-    final convertido = (debt.moneda?.toUpperCase() == 'USD') ? restante * tasaUSD : restante;
-    return prev + convertido;
-  });
-}
-
 
   List<Widget> buildStatusCards() {
     return [
@@ -291,381 +412,380 @@ void _processDebtsData() {
       return dateString;
     }
   }
-void showDebtsModal() {
-  final screenHeight = MediaQuery.of(Get.context!).size.height;
-  final screenWidth = MediaQuery.of(Get.context!).size.width;
-  
-  // Obtener la altura del padding inferior para evitar superposición con botones de navegación
-  final bottomPadding = MediaQuery.of(Get.context!).padding.bottom;
 
-  Navigator.of(Get.context!).push(
-    PageRouteBuilder(
-      opaque: false,
-      pageBuilder: (BuildContext context, _, __) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return GestureDetector(
-              onTap: () {
-                Navigator.pop(context);
-              },
-              child: Material(
-                color: Colors.black54,
-                child: Stack(
-                  children: [
-                    TweenAnimationBuilder<double>(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeOut,
-                      tween: Tween<double>(begin: screenHeight, end: 0),
-                      builder: (_, value, child) {
-                        return Transform.translate(
-                          offset: Offset(0, value),
-                          child: child,
-                        );
-                      },
-                      child: Align(
-                        alignment: Alignment.bottomCenter,
-                        child: GestureDetector(
-                          onTap: () {}, 
-                          child: Container(
-                            width: screenWidth,
-                            constraints: BoxConstraints(
-                              maxHeight: screenHeight * 0.9,
-                            ),
-                            decoration: BoxDecoration(
-                              color: MedicalTheme.cardColor,
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(20),
-                                topRight: Radius.circular(20),
+  void showDebtsModal() {
+    final screenHeight = MediaQuery.of(Get.context!).size.height;
+    final screenWidth = MediaQuery.of(Get.context!).size.width;
+    
+    // Obtener la altura del padding inferior para evitar superposición con botones de navegación
+    final bottomPadding = MediaQuery.of(Get.context!).padding.bottom;
+
+    Navigator.of(Get.context!).push(
+      PageRouteBuilder(
+        opaque: false,
+        pageBuilder: (BuildContext context, _, __) {
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child: Material(
+                  color: Colors.black54,
+                  child: Stack(
+                    children: [
+                      TweenAnimationBuilder<double>(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
+                        tween: Tween<double>(begin: screenHeight, end: 0),
+                        builder: (_, value, child) {
+                          return Transform.translate(
+                            offset: Offset(0, value),
+                            child: child,
+                          );
+                        },
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: GestureDetector(
+                            onTap: () {}, 
+                            child: Container(
+                              width: screenWidth,
+                              constraints: BoxConstraints(
+                                maxHeight: screenHeight * 0.9,
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: MedicalTheme.dividerColor.withOpacity(0.1),
-                                  spreadRadius: 1,
-                                  blurRadius: 10,
+                              decoration: BoxDecoration(
+                                color: MedicalTheme.cardColor,
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(20),
+                                  topRight: Radius.circular(20),
                                 ),
-                              ],
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Línea de arrastre
-                                Container(
-                                  margin: const EdgeInsets.only(top: 12, bottom: 8),
-                                  width: 40,
-                                  height: 4,
-                                  decoration: BoxDecoration(
-                                    color: MedicalTheme.dividerColor,
-                                    borderRadius: BorderRadius.circular(2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: MedicalTheme.dividerColor.withOpacity(0.1),
+                                    spreadRadius: 1,
+                                    blurRadius: 10,
                                   ),
-                                ),
-                                
-                                // Título
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 16, bottom: 24),
-                                  child: Text(
-                                    'Detalle de Adeudos',
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      color: MedicalTheme.textPrimaryColor,
+                                ],
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Línea de arrastre
+                                  Container(
+                                    margin: const EdgeInsets.only(top: 12, bottom: 8),
+                                    width: 40,
+                                    height: 4,
+                                    decoration: BoxDecoration(
+                                      color: MedicalTheme.dividerColor,
+                                      borderRadius: BorderRadius.circular(2),
                                     ),
                                   ),
-                                ),
-                                
-                                // Lista de adeudos
-                                Expanded(
-                                  child: Obx(() {
-                                    if (isLoading.value) {
-                                      return Center(
-                                        child: CircularProgressIndicator(
-                                          color: MedicalTheme.primaryColor,
+                                  
+                                  // Título
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 16, bottom: 24),
+                                    child: Text(
+                                      'Detalle de Adeudos',
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        color: MedicalTheme.textPrimaryColor,
+                                      ),
+                                    ),
+                                  ),
+                                  
+                                  // Lista de adeudos
+                                  Expanded(
+                                    child: Obx(() {
+                                      if (isLoading.value) {
+                                        return Center(
+                                          child: CircularProgressIndicator(
+                                            color: MedicalTheme.primaryColor,
+                                          ),
+                                        );
+                                      }
+                                      
+                                      if (userDebts.isEmpty) {
+                                        return _buildEmptyDebtsView();
+                                      }
+
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                                        child: ListView.separated(
+                                          physics: const BouncingScrollPhysics(),
+                                          itemCount: userDebts.length,
+                                          separatorBuilder: (_, __) => const SizedBox(height: 12),
+                                          itemBuilder: (_, index) => _buildDebtCard(userDebts[index]),
                                         ),
                                       );
-                                    }
-                                    
-                                    if (userDebts.isEmpty) {
-                                      return _buildEmptyDebtsView();
-                                    }
-
-                                    return Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                                      child: ListView.separated(
-                                        physics: const BouncingScrollPhysics(),
-                                        itemCount: userDebts.length,
-                                        separatorBuilder: (_, __) => const SizedBox(height: 12),
-                                        itemBuilder: (_, index) => _buildDebtCard(userDebts[index]),
-                                      ),
-                                    );
-                                  }),
-                                ),
-                                
-                                // Acciones y resumen
-                                Padding(
-                                  // Añadimos padding inferior adicional para evitar superposición con botones de navegación
-                                  padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomPadding),
-                                  child: Column(
-                                    children: [
-                                      // Resumen
-                                      Obx(() => Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            'Total Pendiente:',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w500,
-                                              color: MedicalTheme.textSecondaryColor,
-                                            ),
-                                          ),
-                                          Text(
-                                            '\$${montoTotalPendiente.value.toStringAsFixed(2)}',
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                              color: montoTotalPendiente.value > 0 
-                                                ? Colors.orange
-                                                : MedicalTheme.successColor,
-                                            ),
-                                          ),
-                                        ],
-                                      )),
-                                      
-                                      const SizedBox(height: 20),
-                                      
-                                      // Botón para cerrar
-                                      SizedBox(
-                                        width: double.infinity,
-                                        child: ElevatedButton.icon(
-                                          icon: const Icon(Icons.close_rounded),
-                                          label: const Text("Cerrar"),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: MedicalTheme.primaryColor,
-                                            foregroundColor: Colors.white,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(14),
-                                            ),
-                                            padding: const EdgeInsets.symmetric(vertical: 14),
-                                          ),
-                                          onPressed: () => Navigator.pop(context),
-                                        ),
-                                      ),
-                                    ],
+                                    }),
                                   ),
-                                ),
-                              ],
+                                  
+                                  // Acciones y resumen
+                                  Padding(
+                                    // Añadimos padding inferior adicional para evitar superposición con botones de navegación
+                                    padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomPadding),
+                                    child: Column(
+                                      children: [
+                                        // Resumen
+                                        Obx(() => Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              'Total Pendiente:',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w500,
+                                                color: MedicalTheme.textSecondaryColor,
+                                              ),
+                                            ),
+                                            Text(
+                                              '\$${montoTotalPendiente.value.toStringAsFixed(2)}',
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                                color: montoTotalPendiente.value > 0 
+                                                  ? Colors.orange
+                                                  : MedicalTheme.successColor,
+                                              ),
+                                            ),
+                                          ],
+                                        )),
+                                        
+                                        const SizedBox(height: 20),
+                                        
+                                        // Botón para cerrar
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: ElevatedButton.icon(
+                                            icon: const Icon(Icons.close_rounded),
+                                            label: const Text("Cerrar"),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: MedicalTheme.primaryColor,
+                                              foregroundColor: Colors.white,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(14),
+                                              ),
+                                              padding: const EdgeInsets.symmetric(vertical: 14),
+                                            ),
+                                            onPressed: () => Navigator.pop(context),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+        transitionsBuilder: (_, animation, __, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildEmptyDebtsView() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          Icons.account_balance_wallet_outlined,
+          size: 64,
+          color: Colors.grey.shade400,
+        ),
+        const SizedBox(height: 16),
+        Text(
+          "Sin adeudos disponibles",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey.shade600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          "¡Estás al día con tus pagos!",
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey.shade500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDebtCard(UserDebtsEntity debt) {
+    final isPending = debt.estatus.toLowerCase() == 'pendiente';
+    final statusColor = isPending ? Colors.orange : MedicalTheme.successColor;
+    final formattedDate = formatDate(debt.creadoEl);
+
+    final montoTotal = double.tryParse(debt.monto) ?? 0.0;
+    final montoPagado = double.tryParse(debt.cantidadPagada) ?? 0.0;
+    final montoPendiente = montoTotal - montoPagado;
+
+    final esUSD = (debt.moneda?.toUpperCase() == 'USD');
+    final montoMostrar = esUSD 
+        ? (montoPendiente * 21.0).toStringAsFixed(2) 
+        : montoPendiente.toStringAsFixed(2);
+    final simboloMoneda = 'MXN';
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Encabezado con Tipo y Estatus
+          Container(
+            decoration: BoxDecoration(
+              color: MedicalTheme.primaryColor.withOpacity(0.05),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      debt.tipoAdeudo.toLowerCase() == 'evento' 
+                          ? Icons.event_available
+                          : Icons.card_membership_rounded,
+                      color: MedicalTheme.primaryColor,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      debt.tipoAdeudo,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: MedicalTheme.primaryColor,
+                      ),
                     ),
                   ],
                 ),
-              ),
-            );
-          },
-        );
-      },
-      transitionsBuilder: (_, animation, __, child) {
-        return FadeTransition(
-          opacity: animation,
-          child: child,
-        );
-      },
-    ),
-  );
-}
-
-Widget _buildEmptyDebtsView() {
-  return Column(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      Icon(
-        Icons.account_balance_wallet_outlined,
-        size: 64,
-        color: Colors.grey.shade400,
-      ),
-      const SizedBox(height: 16),
-      Text(
-        "Sin adeudos disponibles",
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Colors.grey.shade600,
-        ),
-      ),
-      const SizedBox(height: 8),
-      Text(
-        "¡Estás al día con tus pagos!",
-        style: TextStyle(
-          fontSize: 14,
-          color: Colors.grey.shade500,
-        ),
-      ),
-    ],
-  );
-}
-
-Widget _buildDebtCard(UserDebtsEntity debt) {
-  final isPending = debt.estatus.toLowerCase() == 'pendiente';
-  final statusColor = isPending ? Colors.orange : MedicalTheme.successColor;
-  final formattedDate = formatDate(debt.creadoEl);
-
-  final montoTotal = double.tryParse(debt.monto) ?? 0.0;
-  final montoPagado = double.tryParse(debt.cantidadPagada) ?? 0.0;
-  final montoPendiente = montoTotal - montoPagado;
-
-  final esUSD = (debt.moneda?.toUpperCase() == 'USD');
-  final montoMostrar = esUSD 
-      ? (montoPendiente * 21.0).toStringAsFixed(2) 
-      : montoPendiente.toStringAsFixed(2);
-  final simboloMoneda = 'MXN';
-
-  return Container(
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.withOpacity(0.1),
-          spreadRadius: 1,
-          blurRadius: 8,
-          offset: const Offset(0, 3),
-        ),
-      ],
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Encabezado con Tipo y Estatus
-        Container(
-          decoration: BoxDecoration(
-            color: MedicalTheme.primaryColor.withOpacity(0.05),
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(16),
-              topRight: Radius.circular(16),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: statusColor,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        debt.estatus,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: statusColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    debt.tipoAdeudo.toLowerCase() == 'evento' 
-                        ? Icons.event_available
-                        : Icons.card_membership_rounded,
-                    color: MedicalTheme.primaryColor,
-                    size: 20,
+          
+          // Contenido
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Descripción
+                Text(
+                  debt.descripcion,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    debt.tipoAdeudo,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: MedicalTheme.primaryColor,
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Row(
+                
+                const SizedBox(height: 12),
+                
+                // Detalles en dos columnas
+                Row(
                   children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: statusColor,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      debt.estatus,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: statusColor,
+                    // Primera columna
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 4),
+                          _buildDetailRow('Total:', '\$$montoMostrar $simboloMoneda'),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value, {Color? valueColor, bool isBold = false}) {
+    return Row(
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            color: Colors.grey.shade600,
           ),
         ),
-        
-        // Contenido
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Descripción
-              Text(
-                debt.descripcion,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black87,
-                ),
-              ),
-              
-              const SizedBox(height: 12),
-              
-              // Detalles en dos columnas
-              Row(
-                children: [
-                  // Primera columna
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 4),
-                        _buildDetailRow('Total:', '\$$montoMostrar $simboloMoneda'),
-                      ],
-                    ),
-                  ),
-                  
-                  
-                ],
-              ),
-            ],
+        const SizedBox(width: 4),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+            color: valueColor ?? Colors.black87,
           ),
         ),
       ],
-    ),
-  );
-}
-
-Widget _buildDetailRow(String label, String value, {Color? valueColor, bool isBold = false}) {
-  return Row(
-    children: [
-      Text(
-        label,
-        style: TextStyle(
-          fontSize: 13,
-          color: Colors.grey.shade600,
-        ),
-      ),
-      const SizedBox(width: 4),
-      Text(
-        value,
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-          color: valueColor ?? Colors.black87,
-        ),
-      ),
-    ],
-  );
-}
+    );
+  }
 
   Color _getColorByEstatus(String estatus) {
     switch (estatus.toLowerCase()) {

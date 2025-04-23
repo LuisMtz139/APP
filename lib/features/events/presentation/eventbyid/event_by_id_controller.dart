@@ -1,3 +1,4 @@
+import 'package:app_cirugia_endoscopica/common/theme/App_Theme.dart';
 import 'package:app_cirugia_endoscopica/features/events/domain/entities/events/events_entity.dart';
 import 'package:app_cirugia_endoscopica/features/events/domain/usecases/event_by_id_usecase.dart';
 import 'package:app_cirugia_endoscopica/features/events/domain/usecases/register_event_usecase.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:quickalert/quickalert.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class EventByIdController extends GetxController {
   final EventByIdUsecase eventByIdUsecase;
@@ -223,14 +225,8 @@ class EventByIdController extends GetxController {
       dashboardsController.fetchUserDebts();
       dashboardsController.fetchUserData();
       
-      QuickAlert.show(
-        context: context,
-        type: QuickAlertType.success,
-        title: '¡Inscripción exitosa!',
-        text: 'Te has inscrito correctamente al evento "${event.value!.titulo}"',
-        confirmBtnText: 'Aceptar',
-        confirmBtnColor: Colors.green,
-      );
+      // Mostrar el nuevo diálogo personalizado en lugar del QuickAlert
+      showSuccessRegistrationDialog(context);
       
     } catch (e) {
       print('Error al registrarse al evento: $e');
@@ -245,6 +241,129 @@ class EventByIdController extends GetxController {
       );
     } finally {
       isRegistering.value = false;
+    }
+  }
+  
+  // Método para mostrar el diálogo de inscripción exitosa con opciones
+  void showSuccessRegistrationDialog(BuildContext context) {
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Container(
+          padding: EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: Colors.white,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.check_circle_outline,
+                color: Colors.green,
+                size: 64,
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Inscripción Exitosa',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Te has inscrito correctamente al evento "${event.value!.titulo}". ¿Deseas realizar el pago ahora?',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black54,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Get.back(); // Cierra el modal
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        side: BorderSide(color: MedicalTheme.primaryColor),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        'Cancelar',
+                        style: TextStyle(
+                          color: MedicalTheme.primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Get.back(); // Cierra el modal
+                        _launchPaymentURL(); // Abre la URL de pago
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: MedicalTheme.primaryColor,
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        'Ir a pagar',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+  
+  // Método para abrir la URL de pago
+  void _launchPaymentURL() async {
+    const url = 'https://www.amce.org.mx/asociados';
+    try {
+      if (await canLaunch(url)) {
+        await launch(url);
+      } else {
+        Get.snackbar(
+          'Error',
+          'No se pudo abrir el enlace de pago',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red[100],
+          colorText: Colors.red[800],
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Ocurrió un problema al intentar abrir el enlace',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red[100],
+        colorText: Colors.red[800],
+      );
     }
   }
   
