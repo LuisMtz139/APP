@@ -292,251 +292,6 @@ void _showEventsModal(BuildContext context) {
   final topPadding = MediaQuery.of(context).padding.top;
   
   // Convertir actividades de eventos a appointments para el calendario
-List<Appointment> _getActivitiesAsAppointments() {
-  List<Appointment> appointments = [];
-  
-  // Solo procesar eventos que tienen actividades
-  final eventsWithActivities = controller.events.where((event) => 
-    event.activities != null && event.activities.isNotEmpty
-  ).toList();
-  
-  for (var event in eventsWithActivities) {
-    for (var activity in event.activities) {
-      // Convertir strings de fechas y horas a DateTime
-      final activityDate = DateTime.parse(activity.dia);
-      
-      // Parsear hora de inicio (formato HH:MM:SS)
-      final startTimeParts = activity.horaInicio.split(':');
-      final startHour = int.parse(startTimeParts[0]);
-      final startMinute = int.parse(startTimeParts[1]);
-      
-      // Parsear hora de fin
-      final endTimeParts = activity.horaFin.split(':');
-      final endHour = int.parse(endTimeParts[0]);
-      final endMinute = int.parse(endTimeParts[1]);
-      
-      // Crear fechas completas con hora de inicio y fin
-      final startTime = DateTime(
-        activityDate.year, 
-        activityDate.month, 
-        activityDate.day, 
-        startHour, 
-        startMinute
-      );
-      
-      final endTime = DateTime(
-        activityDate.year, 
-        activityDate.month, 
-        activityDate.day, 
-        endHour, 
-        endMinute
-      );
-      
-      // Combinar título del evento y nombre de actividad para mostrarlo
-      final combinedSubject = "${event.titulo} - ${activity.nombreActividad}";
-      
-      appointments.add(
-        Appointment(
-          startTime: startTime,
-          endTime: endTime,
-          subject: combinedSubject, // Ahora mostrará el título del evento y el nombre de la actividad
-          location: activity.ubicacionActividad,
-          notes: activity.ponente,
-          color: MedicalTheme.secondaryColor,
-          isAllDay: false,
-        ),
-      );
-    }
-  }
-  
-  return appointments;
-}
-
-  
-  Widget _buildAppointmentWidget(BuildContext context, CalendarAppointmentDetails details) {
-  final Appointment appointment = details.appointments.first;
-  return Container(
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-        colors: [appointment.color.withOpacity(0.85), appointment.color],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-      borderRadius: BorderRadius.circular(6),
-    ),
-    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          appointment.subject,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-          ),
-          overflow: TextOverflow.ellipsis,
-          maxLines: 1,
-        ),
-        if (appointment.notes != null && appointment.notes!.isNotEmpty)
-          Text(
-            appointment.notes!,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 10,
-            ),
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-          ),
-      ],
-    ),
-  );
-}
-  // Constructor personalizado para citas en la vista de agenda
- Widget _buildAgendaAppointmentWidget(BuildContext context, CalendarAppointmentDetails details) {
-  final Appointment appointment = details.appointments.first;
-  
-  // Formatear hora de inicio y fin
-  final startHour = appointment.startTime.hour.toString().padLeft(2, '0');
-  final startMinute = appointment.startTime.minute.toString().padLeft(2, '0');
-  final endHour = appointment.endTime.hour.toString().padLeft(2, '0');
-  final endMinute = appointment.endTime.minute.toString().padLeft(2, '0');
-  
-  return Container(
-    margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(10),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 3,
-          offset: const Offset(0, 1),
-        ),
-      ],
-    ),
-    child: Row(
-      children: [
-        // Barra de color vertical que indica el tipo de evento
-        Container(
-          width: 6,
-          decoration: BoxDecoration(
-            color: MedicalTheme.primaryColor,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(10),
-              bottomLeft: Radius.circular(10),
-            ),
-          ),
-        ),
-        // Bloque de hora
-        Container(
-          width: 70,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "$startHour:$startMinute",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: MedicalTheme.primaryColor,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                "$endHour:$endMinute",
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
-        ),
-        // Contenido principal - Ahora más destacado
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Nombre de la actividad con estilo más prominente
-                Text(
-                  appointment.subject,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                    color: MedicalTheme.textPrimaryColor,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                if (appointment.notes != null && appointment.notes!.isNotEmpty)
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.person,
-                        size: 12,
-                        color: MedicalTheme.primaryColor,
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          appointment.notes!,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: MedicalTheme.primaryColor,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                if (appointment.location != null && appointment.location!.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 3),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.location_on,
-                          size: 12,
-                          color: MedicalTheme.primaryColor,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            appointment.location!,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: MedicalTheme.primaryColor,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-void _showEventsModal(BuildContext context) {
-  final screenHeight = MediaQuery.of(context).size.height;
-  final screenWidth = MediaQuery.of(context).size.width;
-  final bottomPadding = MediaQuery.of(context).padding.bottom;
-  final topPadding = MediaQuery.of(context).padding.top;
-  
-  // Convertir actividades de eventos a appointments para el calendario
   List<Appointment> _getActivitiesAsAppointments() {
     List<Appointment> appointments = [];
     
@@ -796,6 +551,185 @@ void _showEventsModal(BuildContext context) {
     },
   );
 }
+
+
+  
+  Widget _buildAppointmentWidget(BuildContext context, CalendarAppointmentDetails details) {
+  final Appointment appointment = details.appointments.first;
+  return Container(
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        colors: [appointment.color.withOpacity(0.85), appointment.color],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      borderRadius: BorderRadius.circular(6),
+    ),
+    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          appointment.subject,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+          ),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
+        if (appointment.notes != null && appointment.notes!.isNotEmpty)
+          Text(
+            appointment.notes!,
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 10,
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+          ),
+      ],
+    ),
+  );
+}
+  // Constructor personalizado para citas en la vista de agenda
+ Widget _buildAgendaAppointmentWidget(BuildContext context, CalendarAppointmentDetails details) {
+  final Appointment appointment = details.appointments.first;
+  
+  // Formatear hora de inicio y fin
+  final startHour = appointment.startTime.hour.toString().padLeft(2, '0');
+  final startMinute = appointment.startTime.minute.toString().padLeft(2, '0');
+  final endHour = appointment.endTime.hour.toString().padLeft(2, '0');
+  final endMinute = appointment.endTime.minute.toString().padLeft(2, '0');
+  
+  return Container(
+    margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(10),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.05),
+          blurRadius: 3,
+          offset: const Offset(0, 1),
+        ),
+      ],
+    ),
+    child: Row(
+      children: [
+        // Barra de color vertical que indica el tipo de evento
+        Container(
+          width: 6,
+          decoration: BoxDecoration(
+            color: MedicalTheme.primaryColor,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(10),
+              bottomLeft: Radius.circular(10),
+            ),
+          ),
+        ),
+        // Bloque de hora
+        Container(
+          width: 70,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "$startHour:$startMinute",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: MedicalTheme.primaryColor,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                "$endHour:$endMinute",
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Contenido principal - Ahora más destacado
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Nombre de la actividad con estilo más prominente
+                Text(
+                  appointment.subject,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: MedicalTheme.textPrimaryColor,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                if (appointment.notes != null && appointment.notes!.isNotEmpty)
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.person,
+                        size: 12,
+                        color: MedicalTheme.primaryColor,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          appointment.notes!,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: MedicalTheme.primaryColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                if (appointment.location != null && appointment.location!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 3),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.location_on,
+                          size: 12,
+                          color: MedicalTheme.primaryColor,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            appointment.location!,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: MedicalTheme.primaryColor,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }
   Widget _buildEventCard(EventsEntity event) {
     return GestureDetector(

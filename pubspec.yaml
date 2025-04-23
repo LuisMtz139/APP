@@ -55,7 +55,7 @@ flutter_launcher_icons:
   image_path_android: "assets/AMCE-logo.jpg"
   image_path_ios: "assets/AMCE-logo.jpg" # Versión sin transparencia
   adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/icono.jpeg"
+  adaptive_icon_foreground: "assets/AMCE-logo.jpg"
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -79,6 +79,7 @@ flutter:
       - assets/AMCE.png
       - assets/surgeon_background.png
       - assets/nuevo_sugeon.jpg
+      - assets/AMCE-logo.jpg
       - .env
       - test.env
       - dev.env
