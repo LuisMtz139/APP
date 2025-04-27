@@ -270,12 +270,17 @@ class EventByIdController extends GetxController {
       showSuccessRegistrationDialog(context);
     } catch (e) {
       print('Error al registrarse al evento: $e');
-
+ String cleanErrorMessage = e.toString();
+        if (cleanErrorMessage.startsWith("Exception: Exception:")) {
+          cleanErrorMessage = cleanErrorMessage.replaceFirst("Exception: Exception:", "").trim();
+        } else if (cleanErrorMessage.startsWith("Exception:")) {
+          cleanErrorMessage = cleanErrorMessage.replaceFirst("Exception:", "").trim();
+        }
       QuickAlert.show(
         context: context,
         type: QuickAlertType.error,
         title: 'Error',
-        text: 'No se pudo completar la inscripción: ${e.toString()}',
+        text: 'No se pudo completar la inscripción: ${cleanErrorMessage}',
         confirmBtnText: 'Entendido',
         confirmBtnColor: Colors.red,
       );
